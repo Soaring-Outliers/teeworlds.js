@@ -1,0 +1,15 @@
+{
+  "client": {
+    "js": "build/public/js",
+
+    "main": {
+      "path" : "<%= client.js %>/<%= pkg.name %>",
+      "path_min" : "<%= client.js %>/<%= pkg.name %>-min.js"
+    },
+
+    "libs": {
+      "path" : "<%= client.js %>/libs.js",
+      "path_min" : "<%= client.js %>/libs-min.js"
+    }
+  }
+}

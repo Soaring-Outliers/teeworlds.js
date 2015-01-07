@@ -1,0 +1,4 @@
+
+All resources from this folder comes from the original Teeworlds game and are
+released under CC-BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/).
+

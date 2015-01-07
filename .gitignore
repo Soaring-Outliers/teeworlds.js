@@ -1,0 +1,19 @@
+#eclipse files
+.project
+.settings
+
+# temp files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Node
+node_modules/
+npm-debug.log
+
+# Bower
+bower_components
+
+# Grunt
+.grunt
+build
