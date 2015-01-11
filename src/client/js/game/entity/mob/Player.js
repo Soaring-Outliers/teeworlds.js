@@ -1,6 +1,6 @@
 game.entity.mob.Player = me.Entity.extend({
 
-    init: function (x, y, settings) {
+    init: function(x, y, settings) {
 
         this._super(me.Entity, "init", [x, y, settings]);
         this.spritewidth = 33;
@@ -36,15 +36,18 @@ game.entity.mob.Player = me.Entity.extend({
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
         //this.life = 1000;
 
+        cursor = new game.entity.accessory.Cursor(this.pos.x, this.pos.y, {});
+        me.game.world.addChild(cursor);
+
     },
 
-    changeAnimation: function (animationName) {
+    changeAnimation: function(animationName) {
         if (!this.renderable.isCurrentAnimation(animationName)) {
             this.renderable.setCurrentAnimation(animationName);
         }
     },
 
-    update: function (dt) {
+    update: function(dt) {
         //socket.emit("action", )
         if (me.input.isKeyPressed('left') || me.input.isKeyPressed('right')) {
             if (me.input.isKeyPressed('left')) {
@@ -63,7 +66,8 @@ game.entity.mob.Player = me.Entity.extend({
                 this.changeAnimation("walkRecursive");
 
             this.renderable.flipX(this.walkRight);
-        } else {
+        }
+        else {
             if (!this.jumping && !this.falling)
                 this.changeAnimation("stand");
 
@@ -76,16 +80,17 @@ game.entity.mob.Player = me.Entity.extend({
             // make sure we are not already jumping or falling
             //if (!this.jumping && !this.falling) {
 
-                // set current vel to the maximum defined value
-                // gravity will then do the rest
-                this.body.vel.y = -this.body.maxVel.y * me.timer.tick;
-                // set the jumping flag
-                this.jumping = true;
+            // set current vel to the maximum defined value
+            // gravity will then do the rest
+            this.body.vel.y = -this.body.maxVel.y * me.timer.tick;
+            // set the jumping flag
+            this.jumping = true;
 
-                // play some audio
-                //me.audio.play("jump");
+            // play some audio
+            //me.audio.play("jump");
             //}
-        } else {
+        }
+        else {
             this.jumping = false;
         }
 
@@ -104,15 +109,16 @@ game.entity.mob.Player = me.Entity.extend({
          }*/
 
         // check & update player movement
-        this.body.update(dt);
+        this.body.update();
         me.collision.check(this);
 
         this._super(me.Entity, "update", [dt]);
         return true;
     },
 
-    onCollision: function (response, other) {
+    onCollision: function(response, other) {
         // Make all other objects solid
+        //console.log("Collision with Other", other);
         return true;
     }
 
