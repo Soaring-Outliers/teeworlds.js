@@ -12,6 +12,7 @@
     "express": "^4.10.6",
     "jade": "^1.8.2",
     "jay-inheritance": "0.0.2",
+    "time-grunt": "^1.0.0",
     "websocket": "^1.0.14"
   },
   "devDependencies": {

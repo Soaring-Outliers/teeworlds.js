@@ -4,6 +4,9 @@
 var path = require('path');
 
 module.exports = function (grunt) {
+    
+    require('time-grunt')(grunt);
+    
     var sourceFiles = require('./grunt/grunt-sourceFiles');
     var buildTasks = ['get-melonJS-build', 'bower_concat', 'concat', 'copy', 'replace'];
 
