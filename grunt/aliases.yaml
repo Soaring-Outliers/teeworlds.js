@@ -1,0 +1,7 @@
+default:
+  description: 'Default (production) build'
+  tasks:
+    - 'concat'
+    - 'copy'
+    - 'replace'
+    - 'uglify'
