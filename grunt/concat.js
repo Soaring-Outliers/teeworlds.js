@@ -32,10 +32,10 @@ module.exports = {
   },
   libs: {
     src: [
-      'bower_components/melonJS/build/melonJS-2.0.2.js',
-      'bower_components/melonJS/plugins/debug/debugPanel.js',
       'bower_components/jquery/dist/jquery.js',
       'bower_components/jquery.easing/js/jquery.easing.js',
+      'bower_components/melonJS/build/melonJS-2.0.2.js',
+      'bower_components/melonJS/plugins/debug/debugPanel.js',
       'bower_components/peerjs/peer.js'
     ],
     dest: 'dist/public/js/libs.js'
