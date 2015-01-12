@@ -1,6 +1,3 @@
-/**
- * @extends me.ScreenObject
- */
 game.gui.screen.PlayScreen = me.ScreenObject.extend({
 	
 	onResetEvent: function() {

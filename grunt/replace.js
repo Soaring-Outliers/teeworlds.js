@@ -24,11 +24,11 @@ module.exports = {
             }
         ]
     },
-    views: {
+    dev: {
         "files": [
             {
                 "expand": true,
-                "cwd": "src/client/web/views",
+                "cwd": "src/client/web/views/",
                 "src": "**",
                 "dest": "dist/views"
             }
@@ -43,6 +43,37 @@ module.exports = {
                 {
                     "match": "main",
                     "replacement": "teeworlds.js"
+                },
+                {
+                    "match": "manifest",
+                    "replacement": ""
+                }
+            ]
+        }
+    },
+    prod: {
+        "files": [
+            {
+                "expand": true,
+                "cwd": "src/client/web/views/",
+                "src": "**",
+                "dest": "dist/views"
+            }
+        ],
+        "options": {
+            "force": true,
+            "patterns": [
+                {
+                    "match": "libs",
+                    "replacement": "libs.min.js"
+                },
+                {
+                    "match": "main",
+                    "replacement": "teeworlds.min.js"
+                },
+                {
+                    "match": "manifest",
+                    "replacement": "(manifest=cache.manifest)"
                 }
             ]
         }

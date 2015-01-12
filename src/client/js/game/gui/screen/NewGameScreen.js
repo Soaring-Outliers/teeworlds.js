@@ -1,3 +1,6 @@
+/**
+ * @depend ComplexScreen.js
+ */
 game.gui.screen.NewGameScreen = game.gui.screen.ComplexScreen.extend({
 	
 	init: function() {

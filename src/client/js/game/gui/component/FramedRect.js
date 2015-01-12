@@ -1,5 +1,6 @@
 /**
  * Textured frame used as a border for GUI Components
+ * @depend Component.js
  */
 game.gui.component.FramedRect = game.gui.component.Component.extend({
     /**

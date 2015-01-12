@@ -1,3 +1,6 @@
+/**
+ * @depend Component.js
+ */
 game.gui.component.TextBox = game.gui.component.Component.extend({
 	
 	/**
