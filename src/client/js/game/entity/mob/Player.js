@@ -36,9 +36,10 @@ game.entity.mob.Player = me.Entity.extend({
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
         //this.life = 1000;
 
-        cursor = new game.entity.accessory.Cursor(this.pos.x, this.pos.y, {});
-        me.game.world.addChild(cursor);
+        this.cursor = new game.entity.accessory.Cursor(this.pos.x, this.pos.y, {});
+        me.game.world.addChild(this.cursor);
 
+        me.pool.register("bullet", game.entity.accessory.Bullet, true);
     },
 
     changeAnimation: function(animationName) {
@@ -94,19 +95,19 @@ game.entity.mob.Player = me.Entity.extend({
             this.jumping = false;
         }
 
-        /*if (me.input.isKeyPressed('shoot')) {
-         for (var i = 1; i <= (Math.floor(Math.random() * 2) + 1); i++) {
-         if (!this.walkRight) {
-         shot = new game.entity.accessory.Bullet(this.pos.x + 10, this.pos.y + 30, !this.walkRight);
-         }
-         else {
-         shot = new game.entity.accessory.Bullet(this.pos.x + 50, this.pos.y + 30, !this.walkRight);
-         }
-         me.game.add(shot, this.z);
-         }
-         me.game.sort();
-         //me.game.HUD.updateItemValue("score", -1);
-         }*/
+        if (me.input.isKeyPressed('shoot')) {
+            //for (var i = 1; i <= (Math.floor(Math.random() * 2) + 1); i++) {
+            //}
+            var direction = this.angleToPoint(this.cursor.pos);
+            
+            var bullet = me.pool.pull("bullet", this.pos.x, this.pos.y, direction);
+            me.game.world.addChild(bullet);
+            // to remove the bullet : 
+            // me.game.world.removeChild(bullet);
+            
+            
+            //me.game.HUD.updateItemValue("score", -1);
+        }
 
         // check & update player movement
         this.body.update();

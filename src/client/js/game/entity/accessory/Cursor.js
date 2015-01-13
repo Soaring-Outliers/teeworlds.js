@@ -4,7 +4,6 @@ game.entity.accessory.Cursor = me.Sprite.extend({
 
 		// call the parent constructor
 		this._super(me.Sprite, "init", [x, y, me.loader.getImage("sun"), 256, 256]);
-		console.log(this);
 
 		this.screenPos = {
 			x: x,
