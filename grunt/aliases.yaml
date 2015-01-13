@@ -1,10 +1,10 @@
 default:
   description: 'Default (production) build'
   tasks:
-    - 'build_prod'
+    - 'build'
 
-build_prod:
-  description: 'Production build'
+build:
+  description: 'Build production app'
   tasks:
     - 'clean'
     - 'concat'
@@ -13,19 +13,12 @@ build_prod:
     - 'replace:prod'
     - 'uglify'
 
-build_dev:
-  description: 'Development build'
+serve:
+  description: 'Serve development app and wait for changes'
   tasks:
     - 'clean'
     - 'concat'
     - 'copy'
     - 'replace:dist'
     - 'replace:dev'
-    - 'uglify'
-
-serve:
-  description: 'Run dev app and wait for changes'
-  tasks:
-    - 'build_dev'
-    - 'express:dev'
-    - 'watch'
+    - 'concurrent'

@@ -20,7 +20,7 @@ module.exports = {
             interrupt: true
         }
     },
-    server: { // TODO: restart server on change
+    server: { // Changes in src/server/ will be added to dist/ which is watched by nodemon
         files: ['src/server/**'],
         tasks: ['copy:server', 'replace:dist', 'replace:dev'],
         options: {
