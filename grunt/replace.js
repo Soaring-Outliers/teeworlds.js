@@ -86,7 +86,7 @@ module.exports = {
                 },
                 {
                     "match": "manifest",
-                    "replacement": "(manifest=cache.manifest)"
+                    "replacement": "(manifest='cache.manifest')"
                 }
             ]
         }

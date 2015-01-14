@@ -31,39 +31,14 @@ module.exports = {
             next(err);
         });
 
-        // Development environment
-        if (app.get('env') === 'development') {
-            console.log("[NODE_ENV] development");
-
-            //StackTrace On
-            app.use(function (err, req, res, next) {
-                res.status(err.status || 500);
-                res.render('error', {
-                    message: err.message,
-                    error: err
-                });
+        //Server Error 
+        app.use(function (err, req, res, next) {
+            res.status(err.status || 500);
+            res.render('error', {
+                message: err.message,
+                error: (app.get('env') === 'development') ? err : {}
             });
-
-        }
-        // Production environment
-        else if (app.get('env') === 'production') {
-            console.log("[NODE_ENV] production");
-
-            //StackTrace Off
-            app.use(function (err, req, res, next) {
-                res.status(err.status || 500);
-                res.render('error', {
-                    message: err.message,
-                    error: {}
-                });
-            });
-
-            //HTML5 cache manifest configuration
-            require("./cache-manifest")(
-                app,
-                folders
-            );
-        }
+        });
 
         //Launch HTTP server
         var httpServ = http.createServer(app);
