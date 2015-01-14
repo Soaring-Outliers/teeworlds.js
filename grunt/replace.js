@@ -1,5 +1,5 @@
 module.exports = {
-    dist: {
+    teeworld: {
         options: {
             force: true,
             patterns: [
@@ -15,7 +15,20 @@ module.exports = {
                 flatten: true,
                 src: ['dist/public/js/teeworlds.js'],
                 dest: 'dist/public/js/'
-            },
+            }
+        ]
+    },
+    server: {
+        options: {
+            force: true,
+            patterns: [
+                { //Optimizing jay-inheritance when calling a method from a parent class
+                    match : /this\._super\(\s*([\w\.]+)\s*,\s*"(\w+)"\s*(,\s*)?/g,
+                    replacement : "$1.prototype.$2.apply(this$3"
+                }
+            ]
+        },
+        files: [
             {
                 expand: true,
                 cwd: 'src/server',

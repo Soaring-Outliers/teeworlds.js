@@ -9,7 +9,8 @@ build:
     - 'clean'
     - 'concat'
     - 'copy'
-    - 'replace:dist'
+    - 'replace:teeworld'
+    - 'replace:server'
     - 'replace:prod'
     - 'uglify'
 
@@ -19,6 +20,7 @@ serve:
     - 'clean'
     - 'concat'
     - 'copy'
-    - 'replace:dist'
+    - 'replace:teeworld'
+    - 'replace:server'
     - 'replace:dev'
     - 'concurrent'
