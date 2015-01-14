@@ -18,7 +18,7 @@ game.gui.component.TextBox = game.gui.component.Component.extend({
 				frame: false,
 				lineSpacing: 8
 			},
-			options = $.extend(defaults, (options || {}));
+			options = $.extend(defaults, (options || {}));
 			
 		this.formatText = function(txt) {
 			return txt.toUpperCase().trim().replace(/\s*(\n)\s*/, "$1");

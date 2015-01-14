@@ -2,7 +2,7 @@
   "name": "teeworlds.js",
   "version": "0.1.0",
   "scripts": {
-    "start": "grunt serve"
+    "start": "node dist/server.js"
   },
   "private": true,
   "dependencies": {
@@ -12,6 +12,7 @@
     "jade": "^1.8.2",
     "jay-inheritance": "0.0.2",
     "jquery": "^2.1.3",
+    "peerjs": "^0.3.14",
     "time-grunt": "^1.0.0",
     "websocket": "^1.0.14"
   },
