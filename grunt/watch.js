@@ -26,5 +26,12 @@ module.exports = {
         options: {
             interrupt: true
         }
+    },
+    melonJS: {
+        files: ['lib/melonJS/**'],
+        tasks: ['subgrunt'],
+        options: {
+            interrupt: true
+        }
     }
 };

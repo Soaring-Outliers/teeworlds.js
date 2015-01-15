@@ -7,6 +7,7 @@ build:
   description: 'Build production app'
   tasks:
     - 'clean'
+    - 'subgrunt'
     - 'concat_dist'
     - 'concat:libs'
     - 'copy'
@@ -20,6 +21,7 @@ serve:
   description: 'Serve development app and wait for changes'
   tasks:
     - 'clean'
+    - 'subgrunt'
     - 'concat_dist'
     - 'concat:libs'
     - 'copy'
