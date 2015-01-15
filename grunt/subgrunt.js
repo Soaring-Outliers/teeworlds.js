@@ -4,7 +4,7 @@ module.exports = {
         npmInstall: false
       },
       projects: {
-        'lib/melonJS': 'build'
+        'lib/melonJS': 'fast-build'
       }
     }
 };
