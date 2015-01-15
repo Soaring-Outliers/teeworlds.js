@@ -7,7 +7,6 @@
   "private": true,
   "dependencies": {
     "collection": "^0.1.6",
-    "esprima": "^1.2.2",
     "express": "^4.10.6",
     "jade": "^1.8.2",
     "jay-inheritance": "0.0.2",
@@ -18,7 +17,6 @@
   },
   "devDependencies": {
     "grunt": "~0.4.1",
-    "grunt-bower-concat": "^0.4.0",
     "grunt-concurrent": "^1.0.0",
     "grunt-contrib-clean": "~0.4.0",
     "grunt-contrib-concat": "~0.2.0",

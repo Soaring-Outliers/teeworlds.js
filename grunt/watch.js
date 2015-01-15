@@ -1,7 +1,7 @@
 module.exports = {
     client_js: {
         files: ['src/client/js/**/*.js'],
-        tasks: ['concat:dist', 'replace:teeworld'],
+        tasks: ['concat_dist', 'replace:teeworld'],
         options: {
             interrupt: true
         }
