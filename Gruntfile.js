@@ -3,7 +3,9 @@
 
 module.exports = function(grunt) {
   
-  require('time-grunt')(grunt);
+  require('time-grunt')(grunt, {
+      jitGrunt: true
+  });
   
   require('load-grunt-config')(grunt);
   
