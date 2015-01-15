@@ -35,10 +35,12 @@ game.entity.mob.Player = me.Entity.extend({
 
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
         //this.life = 1000;
-
+        
+        // Creates the game cursor which will follow the computer cursor (mouse)
         this.cursor = new game.entity.accessory.Cursor(this.pos.x, this.pos.y, {});
         me.game.world.addChild(this.cursor);
 
+        // Register a pool with class Bullet to quickly instantiate bullets in update -> shoot
         me.pool.register("bullet", game.entity.accessory.Bullet, true);
     },
 
@@ -96,10 +98,10 @@ game.entity.mob.Player = me.Entity.extend({
         }
 
         if (me.input.isKeyPressed('shoot')) {
-            //for (var i = 1; i <= (Math.floor(Math.random() * 2) + 1); i++) {
-            //}
-            var direction = this.angleToPoint(this.cursor.pos);
+            // Angle in radian between character and cursor
+            var direction = this.angleToPoint(this.cursor.center);
             
+            // Shoot bullet
             var bullet = me.pool.pull("bullet", this.pos.x, this.pos.y, direction);
             me.game.world.addChild(bullet);
             // to remove the bullet : 
