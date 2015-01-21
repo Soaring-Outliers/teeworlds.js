@@ -7,7 +7,7 @@ build:
   description: 'Build production app'
   tasks:
     - 'clean'
-    - 'subgrunt'
+    - 'subgrunt:melonJS'
     - 'concat_dist'
     - 'concat:libs'
     - 'copy'
@@ -21,7 +21,7 @@ serve:
   description: 'Serve development app and wait for changes'
   tasks:
     - 'clean'
-    - 'subgrunt'
+    - 'subgrunt:melonJS_min'
     - 'concat_dist'
     - 'concat:libs'
     - 'copy'
