@@ -22,29 +22,36 @@ mutliplayer actions. This P2P WebRTC based architecture will enable to deploy th
 
 ## Project structure
 
+    data                 -> game resources (sprites, audio, maps, ...)
     src
      ├──client
      │  ├──js            -> client source code
-     │  └──web           -> client resources (css, web pages, images, ...)
+     │  └──web           -> client resources (css and web pages)
      └──server
-        ├──express       -> http server source code (express.js server)
+        ├──express       -> http web server source code (express.js server)
         └──websocket     -> websocket server source code
+    lib                  -> non-npm javascript library (melonJS)
+    grunt                -> grunt task definitions
 
 ## Installation
 
     npm install
-    bower install
+    git submodule init
+    git submodule update
 
-## Change environment
+## Grunt tasks
 
-    grunt prod
-    #or
-    grunt dev
+### Run for development (with source code watcher)
 
-## Build
+    grunt serve
+
+### Build for production (with js minifying & html5 cache)
 
     grunt build
+    //Then run with: node dist/server
 
-## Run node server
+### Generate sprites (only executed once when modifying sprites)
 
-    grunt start wait
+    grunt sprite
+
+
