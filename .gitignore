@@ -16,4 +16,5 @@ bower_components
 
 # Grunt
 .grunt
-build
+dist
+.c9

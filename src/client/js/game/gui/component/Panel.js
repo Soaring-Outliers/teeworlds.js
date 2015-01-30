@@ -1,3 +1,6 @@
+/**
+ * @depend Component.js
+ */
 game.gui.component.Panel = game.gui.component.Component.extend({
 
     init: function (options) {

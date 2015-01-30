@@ -1,0 +1,31 @@
+default:
+  description: 'Default (production) build'
+  tasks:
+    - 'build'
+
+build:
+  description: 'Build production app'
+  tasks:
+    - 'clean'
+    - 'subgrunt:melonJS'
+    - 'concat_dist'
+    - 'concat:libs'
+    - 'copy'
+    - 'replace:teeworld'
+    - 'replace:server'
+    - 'replace:prod'
+    - 'uglify'
+    - 'manifest'
+
+serve:
+  description: 'Serve development app and wait for changes'
+  tasks:
+    - 'clean'
+    - 'subgrunt:melonJS_min'
+    - 'concat_dist'
+    - 'concat:libs'
+    - 'copy'
+    - 'replace:teeworld'
+    - 'replace:server'
+    - 'replace:dev'
+    - 'concurrent'

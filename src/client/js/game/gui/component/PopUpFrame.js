@@ -1,3 +1,6 @@
+/**
+ * @depend Component.js
+ */
 game.gui.component.PopUpFrame = game.gui.component.Component.extend({
     init: function (text, parentScreen) {
         this._super(game.gui.component.Component, "init", [{

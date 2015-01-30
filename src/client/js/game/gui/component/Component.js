@@ -1,4 +1,6 @@
-/** Basic GUI object that can be centered if no position is declared */
+/** 
+ * Basic GUI object that can be centered if no position is declared
+ */
 game.gui.component.Component = me.Rect.extend({
 
     /**

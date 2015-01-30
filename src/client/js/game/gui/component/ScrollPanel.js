@@ -1,8 +1,11 @@
-game.gui.component.ScrollPanel = game.gui.component.Panel.extend({
+/**
+ * @depend Component.js
+ */
+ game.gui.component.ScrollPanel = game.gui.component.Panel.extend({
 
 	init: function(options) {
 		var defaults = {},
-			options = $.extend(defaults, (options || {}));
+			options = $.extend(defaults, (options || {}));
 		this._super(game.gui.component.Panel, "init", [options]);
 	},
 	

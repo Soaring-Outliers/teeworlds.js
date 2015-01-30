@@ -1,3 +1,6 @@
+/**
+ * @depend ComplexScreen.js
+ */
 game.gui.screen.InstructionsScreen = game.gui.screen.ComplexScreen.extend({
 	
 	init: function() {

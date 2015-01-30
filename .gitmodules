@@ -1,0 +1,3 @@
+[submodule "lib/melonJS"]
+	path = lib/melonJS
+	url = https://github.com/Teeworlds-JS/melonJS.git

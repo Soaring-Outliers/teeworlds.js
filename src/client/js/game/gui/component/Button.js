@@ -1,3 +1,6 @@
+/**
+ * @depend TextBox.js
+ */
 game.gui.component.Button = game.gui.component.TextBox.extend({
 
 	init: function(options) {
