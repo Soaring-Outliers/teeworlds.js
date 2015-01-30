@@ -9,7 +9,7 @@ module.exports = {
             },
             {
                 expand: true,
-                src: 'data/**',
+                src: ['data/**', '!data/**/originals/**'],
                 dest: 'dist/public/'
             }
         ]
