@@ -43,6 +43,7 @@ var game = {
         //game.guiTexture = new me.TextureAtlas(me.loader.getJSON("gui"), me.loader.getImage("gui"));
         //game.gui.font = new me.BitmapFont("32x32_font", 32);
         game.texture = new me.TextureAtlas(me.loader.getJSON("simon"), me.loader.getImage("simon"));
+        game.texture2 = new me.TextureAtlas(me.loader.getJSON("game"), me.loader.getImage("game"));
 
         me.pool.register("player1", game.entity.mob.Player);
 

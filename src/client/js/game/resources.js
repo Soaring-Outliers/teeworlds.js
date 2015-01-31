@@ -22,7 +22,11 @@ game.resources = [
     {name: "bg_cloud3",		type:"image",	src: "data/mapres/bg_cloud3.png"},
 
     // Hero
-    {name: "simon",			type: "json",	src: "data/sprite/simon.json"},
-    {name: "simon",			type: "image",	src: "data/sprite/simon.png"},
+    {name: "simon",			type: "json",	src: "data/game/simon.json"},
+    {name: "simon",			type: "image",	src: "data/game/simon.png"},
+
+    // Others
+    {name: "game",			type: "json",	src: "data/game/game.json"},
+    {name: "game",			type: "image",	src: "data/game/game.png"}
 
 ];

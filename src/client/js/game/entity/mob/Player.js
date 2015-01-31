@@ -26,7 +26,6 @@ game.entity.mob.Player = me.Entity.extend({
         //this.ylimit = me.game.currentLevel.height;
 
         // set the display to follow our position on both axis
-        me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
         //me.debug.renderHitBox = true;
         this.alwaysUpdate = true;
 
@@ -42,6 +41,7 @@ game.entity.mob.Player = me.Entity.extend({
 
         // Register a pool with class Bullet to quickly instantiate bullets in update -> shoot
         me.pool.register("bullet", game.entity.accessory.Bullet, true);
+        this.body.collisionType = me.collision.types.PLAYER_OBJECT;
     },
 
     changeAnimation: function(animationName) {
@@ -99,16 +99,13 @@ game.entity.mob.Player = me.Entity.extend({
 
         if (me.input.isKeyPressed('shoot')) {
             // Angle in radian between character and cursor
-            var direction = this.angleToPoint(this.cursor.center);
+            var direction = this.angleToPoint(this.cursor.getCenter());
             
             // Shoot bullet
-            var bullet = me.pool.pull("bullet", this.pos.x, this.pos.y, direction);
+            var bullet = me.pool.pull("bullet", this.pos.x+Math.floor(this.width / 2), this.pos.y+Math.floor(this.height / 2), direction);
             me.game.world.addChild(bullet);
             // to remove the bullet : 
             // me.game.world.removeChild(bullet);
-            
-            
-            //me.game.HUD.updateItemValue("score", -1);
         }
 
         // check & update player movement

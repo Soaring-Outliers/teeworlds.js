@@ -12,8 +12,6 @@ game.gui.screen.PlayScreen = me.ScreenObject.extend({
 		me.input.bindKey(me.input.KEY.RIGHT, "right");
 		me.input.bindKey(me.input.KEY.UP, "jump", false);
 		me.input.bindKey(me.input.KEY.SPACE, "shoot", true);
-		
-		
     },
 	
 	onDestroyEvent: function() {

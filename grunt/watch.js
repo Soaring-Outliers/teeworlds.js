@@ -13,6 +13,13 @@ module.exports = {
             interrupt: true
         }
     },
+    client_date: {
+        files: ['data/**'],
+        tasks: ['copy:client_data'],
+        options: {
+            interrupt: true
+        }
+    },
     libs: {
         files: ['bower_components/**'],
         tasks: ['concat:libs'],
@@ -28,7 +35,7 @@ module.exports = {
         }
     },
     melonJS: {
-        files: ['lib/melonJS/**'],
+        files: ['lib/melonJS/src/**'],
         tasks: ['subgrunt:melonJS_min'],
         options: {
             interrupt: true

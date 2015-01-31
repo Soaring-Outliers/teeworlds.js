@@ -2,6 +2,7 @@ function melonJSTemplate(params) {
   var obj = {
     'frames': [],
     'meta': {
+      "app": "ShoeBox",
       "exporter": "melonJS",
       "size": {
         "w": params.spritesheet.width,
@@ -42,6 +43,16 @@ module.exports = {
     src: 'data/gui/originals/*.png',
     dest: 'data/gui/gui.png',
     destCss: 'data/gui/gui.json',
+    cssTemplate: melonJSTemplate
+  },
+  game: {
+    src: [
+      'data/game/originals/gun.png',
+      'data/game/originals/gun_visor.png',
+      'data/game/originals/gun_bullet.png'
+    ],
+    dest: 'data/game/game.png',
+    destCss: 'data/game/game.json',
     cssTemplate: melonJSTemplate
   }
 };

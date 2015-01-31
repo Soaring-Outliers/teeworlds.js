@@ -1,4 +1,13 @@
 module.exports = {
+    client_data :{
+        files: [
+            {
+                expand: true,
+                src: ['data/**', '!data/**/originals/**', '!data/**/LICENSE.txt'],
+                dest: 'dist/public/'
+            }
+        ]
+    },
     client: {
         files: [
             {
@@ -6,11 +15,6 @@ module.exports = {
                 cwd: 'src/client/web',
                 src: '**',
                 dest: 'dist'
-            },
-            {
-                expand: true,
-                src: ['data/**', '!data/**/originals/**'],
-                dest: 'dist/public/'
             }
         ]
     },
