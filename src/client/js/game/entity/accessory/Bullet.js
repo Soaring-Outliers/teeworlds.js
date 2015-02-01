@@ -1,8 +1,9 @@
 game.entity.accessory.Bullet = me.Entity.extend({
 
     init: function (x, y, direction) {
-        var bullet = game.texture2.createSpriteFromName('gun_bullet');
+        var bullet = game.texture.createSpriteFromName('gun_bullet');
         bullet.angle = direction;
+        bullet.scale(0.6, 0.6);
         // I don't want to comment that.
         x = x - Math.floor(bullet.width / 2);
         y = y - Math.floor(bullet.height / 2);
@@ -11,6 +12,8 @@ game.entity.accessory.Bullet = me.Entity.extend({
 
         this._super(me.Entity, "init", [x, y, {width: width, height: height}]);
         this.renderable = bullet;
+
+        //this.anchorPoint = new me.Vector2d(0, 0.5);
 
         // Totally random multiplier. CowboyCoder style.
         //var initialSpeed = 20;
@@ -26,11 +29,11 @@ game.entity.accessory.Bullet = me.Entity.extend({
         // Oh yeah, and set to 0 this stupid accel, because it's used nowhere and just here to bother you.
         //this.body.accel.set(0, 0);
         // No friction, as we don't want the bullet to slow down
-        //this.body.setFriction(0, 0);
+        this.body.setFriction(0, 0);
         // Maybe later, we could do projectiles with various gravities.
 
         // Fir the moment, I'm lazy.
-        //this.body.gravity = 0;
+        this.body.gravity = 0;
 
         // And not round projectiles... But really, I'm lazy.
         //this.flipX(!leftP);
@@ -44,17 +47,17 @@ game.entity.accessory.Bullet = me.Entity.extend({
 
 
         // Actually setting the bullet's acceleration in X and Y
-        this.body.setVelocity(20, 20);
+        this.body.setVelocity(50, 50);
 
         this.body.addShape((new me.Polygon(
             0, 0, [
                 new me.Vector2d(), new me.Vector2d(width, 0),
                 new me.Vector2d(width, height), new me.Vector2d(0, height)
             ]
-        )).rotate(direction));
+        )).rotate(direction).scale(0.6));
 
         this.body.collisionType = me.collision.types.PROJECTILE_OBJECT;
-        this.body.collisionMask = me.collision.types.WORLD_SHAPE;
+        this.body.collisionMask = me.collision.types.WORLD_SHAPE | me.collision.types.ENEMY_OBJECT;
     },
 
     update: function (dt) {
@@ -63,7 +66,7 @@ game.entity.accessory.Bullet = me.Entity.extend({
         //this.body.vel.set(this.velX, this.velY); // Yeah, better idea.
 
         this.body.vel.x = this.body.accel.x * Math.cos(this.renderable.angle);
-        this.body.vel.y = this.body.accel.x * Math.sin(this.renderable.angle);
+        this.body.vel.y = this.body.accel.y * Math.sin(this.renderable.angle);
         //this.body.accel.set(0, 0); // DON'T MOVE, BITCH.
 
         this.body.update(); // pos += vel (should also take in account dt, but really, melonjs doen't care about physics. Just make as it it is normal, please. #IMLazy)

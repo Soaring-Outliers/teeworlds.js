@@ -17,15 +17,9 @@ game.resources = [
     {name: "grass_main",	type: "image",	src: "data/mapres/grass_main.png"},
     {name: "sun",			type: "image",	src: "data/mapres/sun.png"},
     {name: "mountains",		type: "image",	src: "data/mapres/mountains.png"},
-
-    // bg_cloud3
     {name: "bg_cloud3",		type:"image",	src: "data/mapres/bg_cloud3.png"},
 
-    // Hero
-    {name: "simon",			type: "json",	src: "data/game/simon.json"},
-    {name: "simon",			type: "image",	src: "data/game/simon.png"},
-
-    // Others
+    // Main sprite
     {name: "game",			type: "json",	src: "data/game/game.json"},
     {name: "game",			type: "image",	src: "data/game/game.png"}
 

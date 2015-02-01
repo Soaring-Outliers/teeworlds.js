@@ -1,7 +1,7 @@
 game.entity.accessory.Cursor = me.Renderable.extend({
 
     init: function (x, y) {
-        this.sprite = game.texture2.createSpriteFromName('gun_visor');
+        this.sprite = game.texture.createSpriteFromName('gun_visor');
 
         // call the parent constructor
         this._super(me.Renderable, "init", [x, y, 0, 0]);

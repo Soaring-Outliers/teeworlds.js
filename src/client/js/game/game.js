@@ -3,15 +3,15 @@ var game = {
         score: 0
     },
 
-    width: 1152,
-    height: 720,
+    width: 1152*1.4,
+    height: 720*1.4,
 
     'onload': function () {
-        if (!me.video.init("body", me.video.CANVAS, this.width, this.height, true, 'auto')) {
+        if (!me.video.init(null, me.video.CANVAS, this.width, this.height, true, 'auto')) {
             alert("Your browser does not support HTML5 canvas.");
             return;
         }
-
+        
         me.audio.init("mp3,ogg");
         me.loader.onload = this.loaded.bind(this);
         me.loader.preload(game.resources);
@@ -26,6 +26,8 @@ var game = {
     },
 
     'loaded': function () {
+        me.video.renderer.getScreenContext().imageSmoothingEnabled = true;
+
         //me.state.MENU_NEWGAME = me.state.USER;
         //me.state.MENU_JOINGAME = me.state.USER + 1;
         //me.state.MENU_INSTRUCTIONS = me.state.USER + 2;
@@ -42,8 +44,7 @@ var game = {
         //Load gui texture file
         //game.guiTexture = new me.TextureAtlas(me.loader.getJSON("gui"), me.loader.getImage("gui"));
         //game.gui.font = new me.BitmapFont("32x32_font", 32);
-        game.texture = new me.TextureAtlas(me.loader.getJSON("simon"), me.loader.getImage("simon"));
-        game.texture2 = new me.TextureAtlas(me.loader.getJSON("game"), me.loader.getImage("game"));
+        game.texture = new me.TextureAtlas(me.loader.getJSON("game"), me.loader.getImage("game"));
 
         me.pool.register("player1", game.entity.mob.Player);
 

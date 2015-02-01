@@ -49,7 +49,8 @@ module.exports = {
     src: [
       'data/game/originals/gun.png',
       'data/game/originals/gun_visor.png',
-      'data/game/originals/gun_bullet.png'
+      'data/game/originals/gun_bullet.png',
+      'data/game/originals/tee.png'
     ],
     dest: 'data/game/game.png',
     destCss: 'data/game/game.json',

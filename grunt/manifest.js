@@ -2,7 +2,8 @@ module.exports = {
     generate: {
         options: {
             basePath: 'dist/public/',
-            master: '/'
+            master: '/',
+            preferOnline: true
         },
         src: [
             'js/*min.js',
