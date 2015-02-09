@@ -11,6 +11,7 @@ build:
     - 'concat_dist'
     - 'concat:libs'
     - 'copy'
+    - 'imagemin'
     - 'replace:teeworld'
     - 'replace:server'
     - 'replace:prod'
@@ -25,7 +26,15 @@ serve:
     - 'concat_dist'
     - 'concat:libs'
     - 'copy'
+    - 'imagemin'
     - 'replace:teeworld'
     - 'replace:server'
     - 'replace:dev'
     - 'concurrent'
+    
+generateimg:
+  description: 'Build sprites, compress and deploy images'
+  tasks:
+    - 'sprite'
+    - 'copy:client_data'
+    - 'imagemin'
