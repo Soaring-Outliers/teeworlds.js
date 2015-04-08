@@ -1,12 +1,13 @@
 module.exports = {
     static: {
       options: {
-        optimizationLevel: 3
+        optimizationLevel: 7
       },
-      files: {  // 'destination': 'source'
-        'dist/public/data/game/*.png' : 'dist/public/data/game/*.png',
-        'dist/public/data/gui/*.png' : 'dist/public/data/gui/*.png',
-        'dist/public/data/mapres/*.png' : 'dist/public/data/mapres/*.png'
-      }
+      files: [{
+        cwd: 'dist/public/data/',
+        expand: true,
+        src: '**/*.{png,jpg,gif}',
+        dest: 'dist/public/data/'
+      }]
     },
 };

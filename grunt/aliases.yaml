@@ -26,7 +26,6 @@ serve:
     - 'concat_dist'
     - 'concat:libs'
     - 'copy'
-    - 'imagemin'
     - 'replace:teeworld'
     - 'replace:server'
     - 'replace:dev'
