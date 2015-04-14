@@ -6,6 +6,6 @@ module.exports = {
       'lib/melonJS/plugins/debug/debugPanel.js',
       'node_modules/peerjs/dist/peer.js'
     ],
-    dest: 'dist/public/js/libs.js'
+    dest: 'dist/js/libs.js'
   }
 };

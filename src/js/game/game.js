@@ -6,25 +6,6 @@ var game = {
     width: 1152*1.4,
     height: 720*1.4,
 
-    'onload': function () {
-        if (!me.video.init(null, me.video.CANVAS, this.width, this.height, true, 'auto')) {
-            alert("Your browser does not support HTML5 canvas.");
-            return;
-        }
-        
-        me.audio.init("mp3,ogg");
-        me.loader.onload = this.loaded.bind(this);
-        me.loader.preload(game.resources);
-        me.state.change(me.state.LOADING);
-
-        // add "#debug" to the URL to enable the debug Panel
-        if (document.location.hash === "#debug") {
-            window.onReady(function () {
-                me.plugin.register.defer(this, me.debug.Panel, "debug");
-            });
-        }
-    },
-
     'loaded': function () {
         me.video.renderer.getScreenContext().imageSmoothingEnabled = true;
 
@@ -51,6 +32,7 @@ var game = {
         // in melonJS 1.0.0, viewport size is set to Infinity by default
         me.game.viewport.setBounds(0, 0, this.width, this.height);
         me.state.change(me.state.PLAY);
+        game.connection.init();
     },
 
     entity: {accessory: {}, mob: {}},
@@ -105,5 +87,20 @@ var game = {
         }
     },
     screens: {}
-
 };
+window.onReady(function() {
+    if (!me.video.init(null, me.video.CANVAS, game.width, game.height, true, 'auto')) {
+        alert("Your browser does not support HTML5 canvas.");
+        return;
+    }
+    
+    me.audio.init("mp3,ogg");
+    me.loader.onload = game.loaded.bind(game);
+    me.loader.preload(game.resources);
+    me.state.change(me.state.LOADING);
+    
+    // add "#debug" to the URL to enable the debug Panel
+    if (document.location.hash === "#debug") {
+        me.plugin.register.defer(game, me.debug.Panel, "debug");
+    }
+});

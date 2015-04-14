@@ -18,3 +18,5 @@ bower_components
 .grunt
 dist
 .c9
+
+peerJSAPIKey.txt

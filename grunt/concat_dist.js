@@ -13,8 +13,8 @@ module.exports = function(grunt) {
             var fs = require("fs");
             var path = require("path");
 
-            var gameSource = 'src/client/js/game';
-            var dest = 'dist/public/js/teeworlds.js';
+            var gameSource = 'src/js/game';
+            var dest = 'dist/js/teeworlds.js';
             var sourcesInOrder = [];
 
             // Prepare dest folders and dest file

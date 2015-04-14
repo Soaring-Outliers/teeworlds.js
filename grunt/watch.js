@@ -1,42 +1,35 @@
 module.exports = {
-    client_js: {
-        files: ['src/client/js/**/*.js'],
+    js: {
+        files: ['src/js/**'],
         tasks: ['concat_dist', 'replace:teeworld'],
         options: {
             interrupt: true
         }
     },
-    client_web: {
-        files: ['src/client/web/**'],
-        tasks: ['copy:client', 'replace:teeworld', 'replace:dev'],
+    web: {
+        files: ['src/web/**'],
+        tasks: ['copy:web'],
         options: {
             interrupt: true
         }
     },
-    client_date: {
+    data: {
         files: ['data/**'],
-        tasks: ['copy:client_data'],
+        tasks: ['copy:data'],
         options: {
             interrupt: true
         }
     },
     libs: {
-        files: ['bower_components/**'],
+        files: ['node_modules/**'],
         tasks: ['concat:libs'],
-        options: {
-            interrupt: true
-        }
-    },
-    server: { // Changes in src/server/ will be added to dist/ which is watched by nodemon
-        files: ['src/server/**'],
-        tasks: ['copy:server', 'replace:server', 'replace:dev'],
         options: {
             interrupt: true
         }
     },
     melonJS: {
         files: ['lib/melonJS/src/**'],
-        tasks: ['subgrunt:melonJS_min'],
+        tasks: ['subgrunt:melonJS_min', 'concat:libs'],
         options: {
             interrupt: true
         }

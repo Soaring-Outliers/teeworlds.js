@@ -1,28 +1,18 @@
 module.exports = {
-    client_data :{
+    data :{
         files: [
             {
                 expand: true,
                 src: ['data/**', '!data/**/originals/**', '!data/**/LICENSE.txt'],
-                dest: 'dist/public/'
+                dest: 'dist/'
             }
         ]
     },
-    client: {
+    web: {
         files: [
             {
                 expand: true,
-                cwd: 'src/client/web',
-                src: '**',
-                dest: 'dist'
-            }
-        ]
-    },
-    server: {
-        files: [
-            {
-                expand: true,
-                cwd: 'src/server',
+                cwd: 'src/web',
                 src: '**',
                 dest: 'dist'
             }

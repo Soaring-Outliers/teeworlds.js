@@ -1,92 +1,30 @@
 module.exports = {
     teeworld: {
-        options: {
-            force: true,
-            patterns: [
-                { //Optimizing jay-inheritance when calling a method from a parent class
-                    match : /this\._super\(\s*([\w\.]+)\s*,\s*"(\w+)"\s*(,\s*)?/g,
-                    replacement : "$1.prototype.$2.apply(this$3"
-                }
-            ]
-        },
-        files: [
-            {
-                expand: true,
-                flatten: true,
-                src: ['dist/public/js/teeworlds.js'],
-                dest: 'dist/public/js/'
-            }
-        ]
-    },
-    server: {
-        options: {
-            force: true,
-            patterns: [
-                { //Optimizing jay-inheritance when calling a method from a parent class
-                    match : /this\._super\(\s*([\w\.]+)\s*,\s*"(\w+)"\s*(,\s*)?/g,
-                    replacement : "$1.prototype.$2.apply(this$3"
-                }
-            ]
-        },
-        files: [
-            {
-                expand: true,
-                cwd: 'src/server',
-                src: '**',
-                dest: 'dist/'
-            }
-        ]
-    },
-    dev: {
-        "files": [
-            {
-                "expand": true,
-                "cwd": "src/client/web/views/",
-                "src": "**",
-                "dest": "dist/views"
-            }
-        ],
+        "files": {"dist/js/teeworlds.js": "dist/js/teeworlds.js"},
         "options": {
-            "force": true,
             "patterns": [
-                {
-                    "match": "libs",
-                    "replacement": "libs.js"
+                { //Optimizing jay-inheritance when calling a method from a parent class
+                    "match": /this\._super\(\s*([\w\.]+)\s*,\s*"(\w+)"\s*(,\s*)?/g,
+                    "replacement": "$1.prototype.$2.apply(this$3"
                 },
                 {
-                    "match": "main",
-                    "replacement": "teeworlds.js"
-                },
-                {
-                    "match": "manifest",
-                    "replacement": ""
+                    "match": "peerJSAPIKey",
+                    "replacement": require("./peerJSAPIKey.txt")
                 }
             ]
         }
     },
     prod: {
-        "files": [
-            {
-                "expand": true,
-                "cwd": "src/client/web/views/",
-                "src": "**",
-                "dest": "dist/views"
-            }
-        ],
+        "files": {"dist/index.html": "dist/index.html"},
         "options": {
-            "force": true,
             "patterns": [
-                {
-                    "match": "libs",
-                    "replacement": "libs.min.js"
+                { // Use the html5 cache manifest
+                    "match": /\<html\>/g,
+                    "replacement": "<html manifest='cache.manifest'>"
                 },
-                {
-                    "match": "main",
-                    "replacement": "teeworlds.min.js"
-                },
-                {
-                    "match": "manifest",
-                    "replacement": "(manifest='cache.manifest')"
+                { // Use minified js file
+                    "match": /<script type='text\/javascript' src='js\/libs.js'><\/script>\s+<script type='text\/javascript' src='js\/teeworlds.js'><\/script>/g,
+                    "replacement": "<script type='text/javascript' src='js/teeworlds.min.js'></script>"
                 }
             ]
         }

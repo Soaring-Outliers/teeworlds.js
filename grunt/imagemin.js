@@ -4,10 +4,10 @@ module.exports = {
         optimizationLevel: 7
       },
       files: [{
-        cwd: 'dist/public/data/',
+        cwd: 'dist/data/',
         expand: true,
         src: '**/*.{png,jpg,gif}',
-        dest: 'dist/public/data/'
+        dest: 'dist/data/'
       }]
     },
 };

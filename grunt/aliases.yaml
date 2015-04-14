@@ -13,7 +13,6 @@ build:
     - 'copy'
     - 'imagemin'
     - 'replace:teeworld'
-    - 'replace:server'
     - 'replace:prod'
     - 'uglify'
     - 'manifest'
@@ -27,13 +26,11 @@ serve:
     - 'concat:libs'
     - 'copy'
     - 'replace:teeworld'
-    - 'replace:server'
-    - 'replace:dev'
     - 'concurrent'
     
 generateimg:
   description: 'Build sprites, compress and deploy images'
   tasks:
     - 'sprite'
-    - 'copy:client_data'
+    - 'copy:data'
     - 'imagemin'

@@ -1,15 +1,14 @@
 module.exports = {
     generate: {
         options: {
-            basePath: 'dist/public/',
-            master: '/',
-            preferOnline: true
+            basePath: 'dist/',
+            master: '/'
         },
         src: [
             'js/*min.js',
             'css/*.css',
             'data/**/*.*'
         ],
-        dest: 'dist/public/cache.manifest'
+        dest: 'dist/cache.manifest'
     }
 }
