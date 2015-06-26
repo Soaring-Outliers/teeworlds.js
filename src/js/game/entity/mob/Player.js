@@ -33,7 +33,7 @@ game.entity.mob.Player = me.Entity.extend({
         this.walkRight = true;
         this.renderable.flipX(!this.walkRight);
 
-        me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
+        me.game.viewport.follow(this, me.game.viewport.AXIS.BOTH);
         //this.life = 1000;
 
         // Creates the game cursor which will follow the computer cursor (mouse)

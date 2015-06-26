@@ -7,7 +7,6 @@ build:
   description: 'Build production app'
   tasks:
     - 'clean'
-    - 'subgrunt:melonJS'
     - 'concat_dist'
     - 'concat:libs'
     - 'copy'
@@ -21,12 +20,11 @@ serve:
   description: 'Serve development app and wait for changes'
   tasks:
     - 'clean'
-    - 'subgrunt:melonJS_min'
     - 'concat_dist'
     - 'concat:libs'
     - 'copy'
     - 'replace:teeworld'
-    - 'concurrent'
+
     
 generateimg:
   description: 'Build sprites, compress and deploy images'

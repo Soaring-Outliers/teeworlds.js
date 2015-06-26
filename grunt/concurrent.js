@@ -1,6 +1,6 @@
 module.exports = {
   dev: {
-    tasks: ['nodestatic', 'watch'],
+    tasks: ['connect', 'watch'],
     options: {
       logConcurrentOutput: true
     }

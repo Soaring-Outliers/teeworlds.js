@@ -1,36 +1,15 @@
 var game = {
-    data: {
-        score: 0
-    },
 
-    width: 1152*1.4,
-    height: 720*1.4,
+    width: 1280,
+    height: 720,
 
     'loaded': function () {
-        me.video.renderer.getScreenContext().imageSmoothingEnabled = true;
-
-        //me.state.MENU_NEWGAME = me.state.USER;
-        //me.state.MENU_JOINGAME = me.state.USER + 1;
-        //me.state.MENU_INSTRUCTIONS = me.state.USER + 2;
-
-        // add screens
-        //me.state.set(me.state.MENU, new game.gui.screen.TitleScreen());
-        //me.state.set(me.state.MENU_NEWGAME, new game.gui.screen.NewGameScreen());
-        //me.state.set(me.state.MENU_JOINGAME, new game.gui.screen.JoinGameScreen());
-        //me.state.set(me.state.MENU_INSTRUCTIONS, new game.gui.screen.InstructionsScreen());
         me.state.set(me.state.PLAY, new game.gui.screen.PlayScreen());
-        //me.state.set(me.state.GAME_END, new game.gui.screen.WinScreen());
-        //me.state.set(me.state.GAMEOVER, new game.gui.screen.LooseScreen());
-
-        //Load gui texture file
-        //game.guiTexture = new me.TextureAtlas(me.loader.getJSON("gui"), me.loader.getImage("gui"));
-        //game.gui.font = new me.BitmapFont("32x32_font", 32);
-        game.texture = new me.TextureAtlas(me.loader.getJSON("game"), me.loader.getImage("game"));
+        game.texture = new me.video.renderer.Texture(me.loader.getJSON("game"), me.loader.getImage("game"));
 
         me.pool.register("player1", game.entity.mob.Player);
-
-        // in melonJS 1.0.0, viewport size is set to Infinity by default
-        me.game.viewport.setBounds(0, 0, this.width, this.height);
+        
+        //me.game.viewport.setBounds(0, 0, this.width, this.height);
         me.state.change(me.state.PLAY);
         game.connection.init();
     },
@@ -88,8 +67,20 @@ var game = {
     },
     screens: {}
 };
+
 window.onReady(function() {
-    if (!me.video.init(null, me.video.CANVAS, game.width, game.height, true, 'auto')) {
+    var ok = me.video.init(
+        game.width*2.1, 
+        game.height*2.1, 
+        {
+            renderer: me.video.CANVAS, 
+            antiAlias: true, 
+            scale : 'auto', 
+            scaleMethod: "fill-max"
+            
+        }
+    );
+    if (!ok) {
         alert("Your browser does not support HTML5 canvas.");
         return;
     }
