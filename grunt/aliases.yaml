@@ -7,12 +7,11 @@ build:
   description: 'Build production app'
   tasks:
     - 'clean'
-    - 'concat_dist'
-    - 'concat:libs'
+    - 'browserify'
     - 'copy'
     - 'imagemin'
-    - 'replace:teeworld'
-    - 'replace:prod'
+    - 'xmlmin'
+    - 'replace'
     - 'uglify'
     - 'manifest'
 
@@ -20,12 +19,12 @@ serve:
   description: 'Serve development app and wait for changes'
   tasks:
     - 'clean'
-    - 'concat_dist'
-    - 'concat:libs'
+    - 'browserify'
     - 'copy'
     - 'replace:teeworld'
+    - 'connect'
+    - 'watch'
 
-    
 generateimg:
   description: 'Build sprites, compress and deploy images'
   tasks:

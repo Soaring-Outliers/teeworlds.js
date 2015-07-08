@@ -1,3 +1,15 @@
+
+@font-face {
+    font-family: 'dejavu_sansbook';
+    src: url('../data/font/DejaVuSans-webfont.eot');
+    src: url('../data/font/DejaVuSans-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../data/font/DejaVuSans-webfont.woff') format('woff'),
+         url('../data/font/DejaVuSans-webfont.ttf') format('truetype'),
+         url('../data/font/DejaVuSans-webfont.svg#dejavu_sansbook') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
 body {
     background-color: black;
     color: white;
@@ -31,3 +43,4 @@ canvas {
     image-rendering: optimize-contrast;
     -ms-interpolation-mode: nearest-neighbor; */
 }
+

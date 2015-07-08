@@ -1,7 +1,7 @@
 module.exports = {
     js: {
         files: ['src/js/**'],
-        tasks: ['concat_dist', 'replace:teeworld'],
+        tasks: ['browserify', 'replace:teeworld'],
         options: {
             interrupt: true
         }
@@ -19,7 +19,7 @@ module.exports = {
         options: {
             interrupt: true
         }
-    },
+    }/*,
     libs: {
         files: ['node_modules/**'],
         tasks: ['concat:libs'],
@@ -33,5 +33,5 @@ module.exports = {
         options: {
             interrupt: true
         }
-    }
+    }*/
 };

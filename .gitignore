@@ -8,15 +8,18 @@ Thumbs.db
 Desktop.ini
 
 # Node
-node_modules/
+node_modules/*
+!node_modules/melonJS
 npm-debug.log
 
-# Bower
-bower_components
+# Temp files
+/lib/kew.js
 
 # Grunt
 .grunt
 dist
-.c9
 
+# Others
+.c9
+.dropbox.attr
 peerJSAPIKey.txt

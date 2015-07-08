@@ -1,0 +1,4 @@
+
+All resources from this folder were created by Magnus Auvinen for the original
+Teeworlds game and are released under CC-BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/).
+
