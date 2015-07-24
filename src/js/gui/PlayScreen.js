@@ -2,6 +2,7 @@ import me from 'melonJS'
 //import Panel from './Panel.js'
 //import NickNamePanel from './NickNamePanel.js'
 import TextBox from './TextBox.js'
+import Box from './Box.js'
 import Player from '../entity/Player.js'
 
 /*class ComplexScreen extends me.ScreenObject {
@@ -43,7 +44,9 @@ export default class PlayerScreen extends me.ScreenObject {
   }
   
   showNicknamePrompt() {
-    this.overlay = new TextBox({text: "Hello World"})
+    this.overlay = new Box(
+      new TextBox({text: "Hello World"})
+    )
     me.game.world.addChild(this.overlay)
   }
   

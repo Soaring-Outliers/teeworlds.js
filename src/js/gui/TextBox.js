@@ -4,8 +4,7 @@ import Component from './Component.js'
 //import FramedRect from './FramedRect.js'
 
 function formatText(text) {
-  return text.toUpperCase()
-             .trim()
+  return text.trim()
              .replace(/\s*(\n)\s*/, "$1")
 }
 
@@ -46,14 +45,15 @@ export default class TextBox extends Component {
       fitTextH = !width,
       fitTextV = !height
     } = options
-    super({x, y, width: fitTextH ? textWidth : width, height: fitTextV ? textHeight : height})
+    super({
+      x, y, 
+      width: fitTextH ? textWidth : width, 
+      height: fitTextV ? textHeight : height
+    })
 
     this.lines = lines
     this.lineSpacing = lineSpacing
-    let alignArray = align.trim()
-                      .toUpperCase()
-                      .split(" ")
-                      .sort()
+    let alignArray = align.trim().toUpperCase().split(" ").sort()
     
     this.fitTextH = fitTextH
     this.fitTextV = fitTextV
@@ -67,7 +67,7 @@ export default class TextBox extends Component {
     if(alignArray.indexOf("MIDDLE") != -1)
       this.textZone.centerV({parentY: this.y, parentHeight: this.height})
     
-    this.imageRenderer.needUpdate = true
+    this.renderer.needUpdate = true
     
     /*if(frame) {
       this.frame = new FramedRect(this, frameOptions)
@@ -91,7 +91,7 @@ export default class TextBox extends Component {
     //  width = this.frame.width
     //}
     super.width = width
-    this.imageRenderer.needUpdate = true
+    this.renderer.needUpdate = true
   }
   
   set height(height) {
@@ -107,7 +107,7 @@ export default class TextBox extends Component {
     //  width = this.frame.width
     //}
     super.height = height
-    this.imageRenderer.needUpdate = true
+    this.renderer.needUpdate = true
   }
   
   get height() {
@@ -125,7 +125,7 @@ export default class TextBox extends Component {
   
   set text(text) {
     this.lines = formatText(text).split('\n')
-    this.imageRenderer.needUpdate = true
+    this.renderer.needUpdate = true
     
     let {textWidth, textHeight} = computedTextSize(this.lines, this.lineSpacing)
     this.textWidth = textWidth
@@ -133,7 +133,6 @@ export default class TextBox extends Component {
   }
   
   render(renderer) {
-    renderer.prepareSurface()
     var posX = 0,//this.textZone.x,
         posY = 0//this.textZone.y
           

@@ -10,7 +10,13 @@
    </objectgroup>
   </tile>
  </tileset>
- <imagelayer name="mountains" x="745" y="780">
+ <!--
+ <imagelayer name="sun" z="-10">
+  <image source="../mapres/sun.png" trans="000000"/>
+  <properties>
+    <property name="repeat" value="no-repeat"/>
+  </properties>
+ </imagelayer><imagelayer name="mountains" x="745" y="780">
   <image source="../mapres/mountains.png"/>
   <properties>
    <property name="ratio" value="1"/>
@@ -30,7 +36,7 @@
    <property name="ratio" value="0.8"/>
    <property name="repeat" value="no-repeat"/>
   </properties>
- </imagelayer>
+ </imagelayer>-->
  <layer name="background" width="40" height="27">
   <properties>
    <property name="ratio" value="0.8"/>

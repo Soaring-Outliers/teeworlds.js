@@ -1,6 +1,8 @@
-#eclipse files
+# IDE files
 .project
 .settings
+.c9
+.idea
 
 # temp files
 .DS_Store
@@ -8,18 +10,13 @@ Thumbs.db
 Desktop.ini
 
 # Node
-node_modules/*
-!node_modules/melonJS
+node_modules/
 npm-debug.log
-
-# Temp files
-/lib/kew.js
 
 # Grunt
 .grunt
 dist
 
 # Others
-.c9
+/properties.json
 .dropbox.attr
-peerJSAPIKey.txt
