@@ -3,55 +3,43 @@ Teeworlds JS
 
 *Development stage* : early state / project initialization
 
-A WIP [Teeworlds](http://teeworlds.com) clone in the browser.
+A lightweight [Teeworlds](http://teeworlds.com) in the browser.
+Teeworlds was created by Magnus Auvinen and released under [CC-BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
 
-This project does **NOT** intent to port the original game into JavaScript. All graphical resources will be obtained
-from the original game but the source code is made from scratch without trying to translate the original source code.
+This project does **NOT** intend to port the original game into JavaScript. The goal
+of this project is to recreate a lightweight version of Teeworlds into the browser.
+All graphical and audio resources comes from the original game.
 
 ## Design
 
-Teeworlds JS is a full-stack JS project that won't necessarily follow the same software design as the original game.
-This project will not be based on pure server-client architecture but will rather use P2P connections. A server will
-nevertheless serve the game code, the game resources and assist the P2P connection between players but won't relay
-mutliplayer actions. This P2P WebRTC based architecture will enable to deploy this game on very lightweight servers.
-
-**Client-side** : [melonJS](http://melonjs.org/), *WebSocket* (to initialize P2P connections between players) and
-                  [Peer.js](http://peerjs.com/) (for multiplayer using P2P data transfer)
-
-**Server-side** : [Node.js](http://nodejs.org/), [Express](http://expressjs.com/) and *WebSocket*.
+Teeworlds JS is a Javascript project using the [melonJS](http://melonjs.org/) framework
+game and the [PeerJS](http://peerjs.com/) library for connections between players
+through WebRTC (P2P connections). These connections are initiated using the standard
+PeerJS [peer-server](https://github.com/peers/peerjs-server) being either the
+free developer server from (peerjs.com)[http://peerjs.com] or a server hosted on its own.
 
 ## Project structure
 
-    data                 -> game resources (sprites, audio, maps, ...)
+    data                -> game resources (sprites, audio, maps, ...)
     src
-     ├──client
-     │  ├──js            -> client source code
-     │  └──web           -> client resources (css and web pages)
-     └──server
-        ├──express       -> http web server source code (express.js server)
-        └──websocket     -> websocket server source code
-    lib                  -> non-npm javascript library (melonJS)
-    grunt                -> grunt task definitions
+    ├──js               -> game js sources
+    └──web              -> game web sources (css and html)
+    lib                 -> non-npm javascript library (melonJS)
+    grunt               -> grunt tasks definitions
+    properties.json     -> properties file used during packaging (for PeerJS API key)
 
-## Installation
+## Install dependencies
 
     npm install
-    git submodule init
-    git submodule update
 
-## Grunt tasks
-
-### Run for development (with source code watcher)
+## Build and run in static server (in development mode)
 
     grunt serve
 
-### Build for production (with js minifying & html5 cache)
+## Build for production (with js minifying & html5 cache)
 
     grunt build
-    //Then run with: node dist/server
 
-### Generate sprites (only executed once when modifying sprites)
+## Generate sprites (only executed once when modifying sprites)
 
     grunt sprite
-
-
