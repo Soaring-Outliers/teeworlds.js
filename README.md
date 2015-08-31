@@ -1,7 +1,7 @@
 Teeworlds JS
 ================
 
-*Development stage* : early state / project initialization
+*Development stage* : early state
 
 A lightweight [Teeworlds](http://teeworlds.com) in the browser.
 Teeworlds was created by Magnus Auvinen and released under [CC-BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
