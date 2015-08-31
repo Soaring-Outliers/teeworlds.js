@@ -39,16 +39,15 @@ function melonJSTemplate(params) {
 };
 
 module.exports = {
-  gui: {
-    src: 'data/gui/originals/*.png',
-    dest: 'data/gui/gui.png',
-    destCss: 'data/gui/gui.json',
+  ui: {
+    src: 'data/ui/originals/*.png',
+    dest: 'data/ui/ui.png',
+    destCss: 'data/ui/ui.json',
     cssTemplate: melonJSTemplate
   },
   game: {
     src: [
       'data/game/originals/gun.png',
-      'data/game/originals/gun_visor.png',
       'data/game/originals/gun_bullet.png',
       'data/game/originals/tee.png'
     ],

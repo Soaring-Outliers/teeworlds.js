@@ -1,6 +1,5 @@
 import me from 'melonJS'
 import game from '../game.js'
-import {Cursor} from './Cursor.js'
 import {Bullet} from './Bullet.js'
 
 
@@ -39,13 +38,14 @@ export default class Player extends me.Entity {
     this.walkRight = true
     this.renderable.flipX(!this.walkRight)
 
-    me.game.viewport.follow(this, me.game.viewport.AXIS.BOTH)
+    this.center = new me.Vector2d(
+      this.pos.x + this.getBounds().width / 2,
+      this.pos.y + this.getBounds().height / 2
+    )
+
+    me.game.viewport.follow(this.center, me.game.viewport.AXIS.BOTH)
     me.game.viewport.setDeadzone(0,0)
     //this.life = 1000
-
-    // Creates the game cursor which will follow the computer cursor (mouse)
-    this.cursor = new Cursor(this.pos.x, this.pos.y, {})
-    me.game.world.addChild(this.cursor)
 
     // Register a pool with class Bullet to quickly instantiate bullets in update -> shoot
     me.pool.register("bullet", Bullet, true)
@@ -107,17 +107,17 @@ export default class Player extends me.Entity {
 
     if (me.input.isKeyPressed('shoot')) {
       // Angle in radian between character and cursor
-      var direction = this.angleToPoint(this.cursor.getCenter())
+      var direction = this.angleToPoint(game.cursor.pos)
 
       // Shoot bullet
       var bullet = me.pool.pull(
-        "bullet", 
-        this.pos.x + Math.floor(this.width / 2), 
-        this.pos.y + Math.floor(this.height / 2), 
+        "bullet",
+        this.pos.x + Math.floor(this.width / 2),
+        this.pos.y + Math.floor(this.height / 2),
         direction
       )
       me.game.world.addChild(bullet)
-      // to remove the bullet : 
+      // to remove the bullet :
       // me.game.world.removeChild(bullet)
     }
 
@@ -126,6 +126,10 @@ export default class Player extends me.Entity {
     me.collision.check(this)
 
     super.update(dt)
+
+    this.center.x = this.pos.x + this.getBounds().width / 2
+    this.center.y = this.pos.y + this.getBounds().height / 2
+
     return true
   }
 

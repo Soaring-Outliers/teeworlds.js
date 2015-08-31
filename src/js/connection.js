@@ -2,8 +2,8 @@ import {HashMap} from 'hashmap'
 import {Peer} from 'peerjs'
 import {Promise} from 'kew'
 
-var PeerConnection = Object.extend({
-  init: function(peerJSConnection) {
+class PeerConnection {
+  constructor(peerJSConnection) {
     this.peerJSConnection = peerJSConnection
     this.connectedDataConnections = new HashMap()
 
@@ -13,60 +13,51 @@ var PeerConnection = Object.extend({
     this.once = peerJSConnection.once.bind(peerJSConnection)
     this.off = peerJSConnection.off.bind(peerJSConnection)
     this.id = peerJSConnection.id
-  },
+  }
 
-  addDataConnection: function(dataConnection) {
-    var self = this
+  addDataConnection(dataConnection) {
     if(!this.connectedDataConnections.has(dataConnection.peer)) {
       console.log('Requested connection: ' + dataConnection.peer)
       this.connectedDataConnections.set(dataConnection.peer, dataConnection)
-      dataConnection.on('close', function() {
-        self.connectedDataConnections.remove(dataConnection.peer)
-      })
+      dataConnection.on('close', () =>
+        this.connectedDataConnections.remove(dataConnection.peer)
+      )
     }
-  },
+  }
 
-  connect: function(peerId) {
-    var self = this
-    return new Promise(function(onFullfilled, onRejected) {
-      var dataConnection = self.peerJSConnection.connect(peerId)
-      self.peerJSConnection.once('error', onRejected)
+  connect(peerId) {
+    return new Promise((onFullfilled, onRejected) => {
+      var dataConnection = this.peerJSConnection.connect(peerId)
+      this.peerJSConnection.once('error', onRejected)
       dataConnection
-        .once('open', function() {
-          self.peerJSConnection.off('error', onRejected)
-          self.addDataConnection.apply(self, [dataConnection])
+        .once('open', () => {
+          this.peerJSConnection.off('error', onRejected)
+          this.addDataConnection.apply(this, [dataConnection])
           onFullfilled(dataConnection)
         })
     })
   }
-})
 
-PeerConnection.create = function(id) {
-  return new Promise(function(onFullfilled, onRejected) {
-    var peerJSConnection = new Peer(id, {key: '@@peerJSAPIKey', debug: 3})
-    peerJSConnection
-      .once('open', function() {
-        peerJSConnection.off('error', onRejected)
-        onFullfilled(new PeerConnection(peerJSConnection))
-      })
-      .once('error', onRejected)
-  })
-}
-
-export var connection = {
-  connect: function(id) {
-    var self = this
-    return PeerConnection
-      .create(id)
-      .then(function(peerConnection) {
-        self.peerConnection = peerConnection
-        return peerConnection
-      })
+  static create(id) {
+    return new Promise(function(onFullfilled, onRejected) {
+      var peerJSConnection = new Peer(id, {key: PeerConnection.peerJSAPIKey, debug: 3})
+      peerJSConnection
+        .once('open', function() {
+          peerJSConnection.off('error', onRejected)
+          onFullfilled(new PeerConnection(peerJSConnection))
+        })
+        .once('error', onRejected)
+    })
   }
 }
+PeerConnection.peerJSAPIKey = "@@peerJSAPIKey"
 
-connection.peerJSAPIKey = "@@peerJSAPIKey"
-connection.peerConnection = null
+// Connection
+var peerConnection = null
+export default {
+  init: (id) => PeerConnection.create(id).then((c) => peerConnection = c),
+  connectTo: (id) => peerConnection.connect(id)
+}
 
 /*
 var PeerConnectionManager = (function() {
@@ -103,7 +94,7 @@ var PeerConnectionManager = (function() {
       }
 
       if(peerId === parseInt(self.baseConnection.id))
-        peerId += 1 
+        peerId += 1
 
       if(peerId <= peerIdLimit)
         return self.baseConnection.connect(peerId).then(fullfilled, increment)

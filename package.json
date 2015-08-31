@@ -6,6 +6,7 @@
   },
   "private": true,
   "dependencies": {
+    "babel-runtime": "^5.8.20",
     "browserify": "^10.2.6",
     "browserify-shim": "^3.8.10",
     "easing": "0.0.4",
@@ -29,13 +30,16 @@
     "grunt-contrib-uglify": "~0.2.7",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-manifest": "~0.4.0",
+    "grunt-notify": "^0.4.1",
     "grunt-replace": "~0.7.7",
     "grunt-spritesmith": "^3.6.0",
     "grunt-xmlmin": "^0.1.4",
     "load-grunt-config": "^0.16.0"
   },
   "browserify": {
-    "transform": [ "browserify-shim" ]
+    "transform": [
+      "browserify-shim"
+    ]
   },
   "browserify-shim": {
     "melonJS": "global:me"

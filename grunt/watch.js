@@ -1,21 +1,21 @@
 module.exports = {
     js: {
         files: ['src/js/**'],
-        tasks: ['browserify', 'replace:teeworld'],
+        tasks: ['browserify', 'replace:teeworld', 'notify:js'],
         options: {
             interrupt: true
         }
     },
     web: {
         files: ['src/web/**'],
-        tasks: ['copy:web'],
+        tasks: ['copy:web', 'notify:web'],
         options: {
             interrupt: true
         }
     },
     data: {
         files: ['data/**'],
-        tasks: ['copy:data'],
+        tasks: ['copy:data', 'notify:data'],
         options: {
             interrupt: true
         }

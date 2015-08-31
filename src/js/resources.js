@@ -1,12 +1,4 @@
 export default [
-
-   
-    /*{
-    // Title screen bg
-    {name: "menu_bg",		type: "image",	src: "img/gui/menu_bg.jpg"},
-    {name: "menu_logo",		type: "image",	src: "img/gui/logo.png"},
-    */
-
     // mini map
     {name: "mini",			type: "tmx",	src: "data/map/mini.tmx"},
     {name: "grass_main",	type: "image",	src: "data/mapres/grass_main.png"},
@@ -19,6 +11,6 @@ export default [
     {name: "game",			type: "image",	src: "data/game/game.png"},
 
     // Gui texture
-    {name: "gui",           type: "json",   src: "data/gui/gui.json"},
-    {name: "gui",           type: "image",  src: "data/gui/gui.png"}
+    {name: "ui",           type: "json",   src: "data/ui/ui.json"},
+    {name: "ui",           type: "image",  src: "data/ui/ui.png"}
 ]
