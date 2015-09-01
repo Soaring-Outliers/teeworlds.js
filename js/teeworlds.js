@@ -1082,98 +1082,6 @@ require('./es6.array.iterator');
 var Iterators = require('./$.iterators');
 Iterators.NodeList = Iterators.HTMLCollection = Iterators.Array;
 },{"./$.iterators":41,"./es6.array.iterator":65}],72:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = setTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            currentQueue[queueIndex].run();
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    clearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],73:[function(require,module,exports){
 /**
  * HashMap - HashMap Class for JavaScript
  * @author Ariel Flesler <aflesler@gmail.com>
@@ -1362,807 +1270,7 @@ process.umask = function() { return 0; };
 	return HashMap;
 }));
 
-},{}],74:[function(require,module,exports){
-(function (process){
-
-/**
- * An object representing a "promise" for a future value
- *
- * @param {?function(T, ?)=} onSuccess a function to handle successful
- *     resolution of this promise
- * @param {?function(!Error, ?)=} onFail a function to handle failed
- *     resolution of this promise
- * @constructor
- * @template T
- */
-function Promise(onSuccess, onFail) {
-  this.promise = this
-  this._isPromise = true
-  this._successFn = onSuccess
-  this._failFn = onFail
-  this._scope = this
-  this._boundArgs = null
-  this._hasContext = false
-  this._nextContext = undefined
-  this._currentContext = undefined
-}
-
-/**
- * @param {function()} callback
- */
-function nextTick (callback) {
-  callback()
-}
-
-if (typeof process !== 'undefined') {
-  nextTick = process.nextTick
-}
-
-/**
- * All callback execution should go through this function.  While the
- * implementation below is simple, it can be replaced with more sophisticated
- * implementations that enforce QoS on the event loop.
- *
- * @param {Promise} defer
- * @param {Function} callback
- * @param {Object|undefined} scope
- * @param {Array} args
- */
-function nextTickCallback (defer, callback, scope, args) {
-  try {
-    defer.resolve(callback.apply(scope, args))
-  } catch (thrown) {
-    defer.reject(thrown)
-  }
-}
-
-/**
- * Used for accessing the nextTick function from outside the kew module.
- *
- * @return {Function}
- */
-function getNextTickFunction () {
-  return nextTick
-}
-
-/**
- * Used for overriding the nextTick function from outside the kew module so that
- * the user can plug and play lower level schedulers
- * @param {!Function} fn
- */
-function setNextTickFunction (fn) {
-  nextTick = fn
-}
-
-/**
- * Keep track of the number of promises that are rejected along side
- * the number of rejected promises we call _failFn on so we can look
- * for leaked rejections.
- * @constructor
- */
-function PromiseStats() {
-  /** @type {number} */
-  this.errorsEmitted = 0
-
-  /** @type {number} */
-  this.errorsHandled = 0
-}
-
-var stats = new PromiseStats()
-
-Promise.prototype._handleError = function () {
-  if (!this._errorHandled) {
-    stats.errorsHandled++
-    this._errorHandled = true
-  }
-}
-
-/**
- * Specify that the current promise should have a specified context
- * @param  {*} context context
- * @private
- */
-Promise.prototype._useContext = function (context) {
-  this._nextContext = this._currentContext = context
-  this._hasContext = true
-  return this
-}
-
-Promise.prototype.clearContext = function () {
-  this._hasContext = false
-  this._nextContext = undefined
-  return this
-}
-
-/**
- * Set the context for all promise handlers to follow
- *
- * NOTE(dpup): This should be considered deprecated.  It does not do what most
- * people would expect.  The context will be passed as a second argument to all
- * subsequent callbacks.
- *
- * @param {*} context An arbitrary context
- */
-Promise.prototype.setContext = function (context) {
-  this._nextContext = context
-  this._hasContext = true
-  return this
-}
-
-/**
- * Get the context for a promise
- * @return {*} the context set by setContext
- */
-Promise.prototype.getContext = function () {
-  return this._nextContext
-}
-
-/**
- * Resolve this promise with a specified value
- *
- * @param {*=} data
- */
-Promise.prototype.resolve = function (data) {
-  if (this._error || this._hasData) throw new Error("Unable to resolve or reject the same promise twice")
-
-  var i
-  if (data && isPromise(data)) {
-    this._child = data
-    if (this._promises) {
-      for (i = 0; i < this._promises.length; i += 1) {
-        data._chainPromise(this._promises[i])
-      }
-      delete this._promises
-    }
-
-    if (this._onComplete) {
-      for (i = 0; i < this._onComplete.length; i+= 1) {
-        data.fin(this._onComplete[i])
-      }
-      delete this._onComplete
-    }
-  } else if (data && isPromiseLike(data)) {
-    data.then(
-      function(data) { this.resolve(data) }.bind(this),
-      function(err) { this.reject(err) }.bind(this)
-    )
-  } else {
-    this._hasData = true
-    this._data = data
-
-    if (this._onComplete) {
-      for (i = 0; i < this._onComplete.length; i++) {
-        this._onComplete[i]()
-      }
-    }
-
-    if (this._promises) {
-      for (i = 0; i < this._promises.length; i += 1) {
-        this._promises[i]._useContext(this._nextContext)
-        this._promises[i]._withInput(data)
-      }
-      delete this._promises
-    }
-  }
-}
-
-/**
- * Reject this promise with an error
- *
- * @param {!Error} e
- */
-Promise.prototype.reject = function (e) {
-  if (this._error || this._hasData) throw new Error("Unable to resolve or reject the same promise twice")
-
-  var i
-  this._error = e
-  stats.errorsEmitted++
-
-  if (this._ended) {
-    this._handleError()
-    process.nextTick(function onPromiseThrow() {
-      throw e
-    })
-  }
-
-  if (this._onComplete) {
-    for (i = 0; i < this._onComplete.length; i++) {
-      this._onComplete[i]()
-    }
-  }
-
-  if (this._promises) {
-    this._handleError()
-    for (i = 0; i < this._promises.length; i += 1) {
-      this._promises[i]._useContext(this._nextContext)
-      this._promises[i]._withError(e)
-    }
-    delete this._promises
-  }
-}
-
-/**
- * Provide a callback to be called whenever this promise successfully
- * resolves. Allows for an optional second callback to handle the failure
- * case.
- *
- * @param {?function(this:void, T, ?): RESULT|undefined} onSuccess
- * @param {?function(this:void, !Error, ?): RESULT=} onFail
- * @return {!Promise.<RESULT>} returns a new promise with the output of the onSuccess or
- *     onFail handler
- * @template RESULT
- */
-Promise.prototype.then = function (onSuccess, onFail) {
-  var promise = new Promise(onSuccess, onFail)
-  if (this._nextContext) promise._useContext(this._nextContext)
-
-  if (this._child) this._child._chainPromise(promise)
-  else this._chainPromise(promise)
-
-  return promise
-}
-
-/**
- * Provide a callback to be called whenever this promise successfully
- * resolves. The callback will be executed in the context of the provided scope.
- *
- * @param {function(this:SCOPE, ...): RESULT} onSuccess
- * @param {SCOPE} scope Object whose context callback will be executed in.
- * @param {...*} var_args Additional arguments to be passed to the promise callback.
- * @return {!Promise.<RESULT>} returns a new promise with the output of the onSuccess
- * @template SCOPE, RESULT
- */
-Promise.prototype.thenBound = function (onSuccess, scope, var_args) {
-  var promise = new Promise(onSuccess)
-  if (this._nextContext) promise._useContext(this._nextContext)
-
-  promise._scope = scope
-  if (arguments.length > 2) {
-    promise._boundArgs = Array.prototype.slice.call(arguments, 2)
-  }
-
-  // Chaining must happen after setting args and scope since it may fire callback.
-  if (this._child) this._child._chainPromise(promise)
-  else this._chainPromise(promise)
-
-  return promise
-}
-
-/**
- * Provide a callback to be called whenever this promise is rejected
- *
- * @param {function(this:void, !Error, ?)} onFail
- * @return {!Promise.<T>} returns a new promise with the output of the onFail handler
- */
-Promise.prototype.fail = function (onFail) {
-  return this.then(null, onFail)
-}
-
-/**
- * Provide a callback to be called whenever this promise is rejected.
- * The callback will be executed in the context of the provided scope.
- *
- * @param {function(this:SCOPE, ...)} onFail
- * @param {SCOPE} scope Object whose context callback will be executed in.
- * @param {...?} var_args
- * @return {!Promise.<T>} returns a new promise with the output of the onSuccess
- * @template SCOPE
- */
-Promise.prototype.failBound = function (onFail, scope, var_args) {
-  var promise = new Promise(null, onFail)
-  if (this._nextContext) promise._useContext(this._nextContext)
-
-  promise._scope = scope
-  if (arguments.length > 2) {
-    promise._boundArgs = Array.prototype.slice.call(arguments, 2)
-  }
-
-  // Chaining must happen after setting args and scope since it may fire callback.
-  if (this._child) this._child._chainPromise(promise)
-  else this._chainPromise(promise)
-
-  return promise
-}
-
-/**
- * Provide a callback to be called whenever this promise is either resolved
- * or rejected.
- *
- * @param {function()} onComplete
- * @return {!Promise.<T>} returns the current promise
- */
-Promise.prototype.fin = function (onComplete) {
-  if (this._hasData || this._error) {
-    onComplete()
-    return this
-  }
-
-  if (this._child) {
-    this._child.fin(onComplete)
-  } else {
-    if (!this._onComplete) this._onComplete = [onComplete]
-    else this._onComplete.push(onComplete)
-  }
-
-  return this
-}
-
-/**
- * Mark this promise as "ended". If the promise is rejected, this will throw an
- * error in whatever scope it happens to be in
- *
- * @return {!Promise.<T>} returns the current promise
- * @deprecated Prefer done(), because it's consistent with Q.
- */
-Promise.prototype.end = function () {
-  this._end()
-  return this
-}
-
-
-/**
- * Mark this promise as "ended".
- * @private
- */
-Promise.prototype._end = function () {
-  if (this._error) {
-    this._handleError()
-    throw this._error
-  }
-  this._ended = true
-  return this
-}
-
-/**
- * Close the promise. Any errors after this completes will be thrown to the global handler.
- *
- * @param {?function(this:void, T, ?)=} onSuccess a function to handle successful
- *     resolution of this promise
- * @param {?function(this:void, !Error, ?)=} onFailure a function to handle failed
- *     resolution of this promise
- * @return {void}
- */
-Promise.prototype.done = function (onSuccess, onFailure) {
-  var self = this
-  if (onSuccess || onFailure) {
-    self = self.then(onSuccess, onFailure)
-  }
-  self._end()
-}
-
-/**
- * Return a new promise that behaves the same as the current promise except
- * that it will be rejected if the current promise does not get fulfilled
- * after a certain amount of time.
- *
- * @param {number} timeoutMs The timeout threshold in msec
- * @param {string=} timeoutMsg error message
- * @return {!Promise.<T>} a new promise with timeout
- */
- Promise.prototype.timeout = function (timeoutMs, timeoutMsg) {
-  var deferred = new Promise()
-  var isTimeout = false
-
-  var timeout = setTimeout(function() {
-    deferred.reject(new Error(timeoutMsg || 'Promise timeout after ' + timeoutMs + ' ms.'))
-    isTimeout = true
-  }, timeoutMs)
-
-  this.then(function (data) {
-    if (!isTimeout) {
-      clearTimeout(timeout)
-      deferred.resolve(data)
-    }
-  },
-  function (err) {
-    if (!isTimeout) {
-      clearTimeout(timeout)
-      deferred.reject(err)
-    }
-  })
-
-  return deferred.promise
-}
-
-/**
- * Attempt to resolve this promise with the specified input
- *
- * @param {*} data the input
- */
-Promise.prototype._withInput = function (data) {
-  if (this._successFn) {
-    this._nextTick(this._successFn, [data, this._currentContext])
-  } else {
-    this.resolve(data)
-  }
-
-  // context is no longer needed
-  delete this._currentContext
-}
-
-/**
- * Attempt to reject this promise with the specified error
- *
- * @param {!Error} e
- * @private
- */
-Promise.prototype._withError = function (e) {
-  if (this._failFn) {
-    this._nextTick(this._failFn, [e, this._currentContext])
-  } else {
-    this.reject(e)
-  }
-
-  // context is no longer needed
-  delete this._currentContext
-}
-
-/**
- * Calls a function in the correct scope, and includes bound arguments.
- * @param {Function} fn
- * @param {Array} args
- * @private
- */
-Promise.prototype._nextTick = function (fn, args) {
-  if (this._boundArgs) {
-    args = this._boundArgs.concat(args)
-  }
-  nextTick(nextTickCallback.bind(null, this, fn, this._scope, args))
-}
-
-/**
- * Chain a promise to the current promise
- *
- * @param {!Promise} promise the promise to chain
- * @private
- */
-Promise.prototype._chainPromise = function (promise) {
-  var i
-  if (this._hasContext) promise._useContext(this._nextContext)
-
-  if (this._child) {
-    this._child._chainPromise(promise)
-  } else if (this._hasData) {
-    promise._withInput(this._data)
-  } else if (this._error) {
-    // We can't rely on _withError() because it's called on the chained promises
-    // and we need to use the source's _errorHandled state
-    this._handleError()
-    promise._withError(this._error)
-  } else if (!this._promises) {
-    this._promises = [promise]
-  } else {
-    this._promises.push(promise)
-  }
-}
-
-/**
- * Utility function used for creating a node-style resolver
- * for deferreds
- *
- * @param {!Promise} deferred a promise that looks like a deferred
- * @param {Error=} err an optional error
- * @param {*=} data optional data
- */
-function resolver(deferred, err, data) {
-  if (err) deferred.reject(err)
-  else deferred.resolve(data)
-}
-
-/**
- * Creates a node-style resolver for a deferred by wrapping
- * resolver()
- *
- * @return {function(?Error, *)} node-style callback
- */
-Promise.prototype.makeNodeResolver = function () {
-  return resolver.bind(null, this)
-}
-
-/**
- * Return true iff the given object is a promise of this library.
- *
- * Because kew's API is slightly different than other promise libraries,
- * it's important that we have a test for its promise type. If you want
- * to test for a more general A+ promise, you should do a cap test for
- * the features you want.
- *
- * @param {*} obj The object to test
- * @return {boolean} Whether the object is a promise
- */
-function isPromise(obj) {
-  return !!obj._isPromise
-}
-
-/**
- * Return true iff the given object is a promise-like object, e.g. appears to
- * implement Promises/A+ specification
- *
- * @param {*} obj The object to test
- * @return {boolean} Whether the object is a promise-like object
- */
-function isPromiseLike(obj) {
-  return (typeof obj === 'object' || typeof obj === 'function') &&
-    typeof obj.then === 'function'
-}
-
-/**
- * Static function which creates and resolves a promise immediately
- *
- * @param {T} data data to resolve the promise with
- * @return {!Promise.<T>}
- * @template T
- */
-function resolve(data) {
-  var promise = new Promise()
-  promise.resolve(data)
-  return promise
-}
-
-/**
- * Static function which creates and rejects a promise immediately
- *
- * @param {!Error} e error to reject the promise with
- * @return {!Promise}
- */
-function reject(e) {
-  var promise = new Promise()
-  promise.reject(e)
-  return promise
-}
-
-/**
- * Replace an element in an array with a new value. Used by .all() to
- * call from .then()
- *
- * @param {!Array} arr
- * @param {number} idx
- * @param {*} val
- * @return {*} the val that's being injected into the array
- */
-function replaceEl(arr, idx, val) {
-  arr[idx] = val
-  return val
-}
-
-/**
- * Replace an element in an array as it is resolved with its value.
- * Used by .allSettled().
- *
- * @param {!Array} arr
- * @param {number} idx
- * @param {*} value The value from a resolved promise.
- * @return {*} the data that's being passed in
- */
-function replaceElFulfilled(arr, idx, value) {
-  arr[idx] = {
-    state: 'fulfilled',
-    value: value
-  }
-  return value
-}
-
-/**
- * Replace an element in an array as it is rejected with the reason.
- * Used by .allSettled().
- *
- * @param {!Array} arr
- * @param {number} idx
- * @param {*} reason The reason why the original promise is rejected
- * @return {*} the data that's being passed in
- */
-function replaceElRejected(arr, idx, reason) {
-  arr[idx] = {
-    state: 'rejected',
-    reason: reason
-  }
-  return reason
-}
-
-/**
- * Takes in an array of promises or literals and returns a promise which returns
- * an array of values when all have resolved. If any fail, the promise fails.
- *
- * @param {!Array.<!Promise>} promises
- * @return {!Promise.<!Array>}
- */
-function all(promises) {
-  if (arguments.length != 1 || !Array.isArray(promises)) {
-    promises = Array.prototype.slice.call(arguments, 0)
-  }
-  if (!promises.length) return resolve([])
-
-  var outputs = []
-  var finished = false
-  var promise = new Promise()
-  var counter = promises.length
-
-  for (var i = 0; i < promises.length; i += 1) {
-    if (!promises[i] || !isPromiseLike(promises[i])) {
-      outputs[i] = promises[i]
-      counter -= 1
-    } else {
-      promises[i].then(replaceEl.bind(null, outputs, i))
-      .then(function decrementAllCounter() {
-        counter--
-        if (!finished && counter === 0) {
-          finished = true
-          promise.resolve(outputs)
-        }
-      }, function onAllError(e) {
-        if (!finished) {
-          finished = true
-          promise.reject(e)
-        }
-      })
-    }
-  }
-
-  if (counter === 0 && !finished) {
-    finished = true
-    promise.resolve(outputs)
-  }
-
-  return promise
-}
-
-/**
- * Takes in an array of promises or values and returns a promise that is
- * fulfilled with an array of state objects when all have resolved or
- * rejected. If a promise is resolved, its corresponding state object is
- * {state: 'fulfilled', value: Object}; whereas if a promise is rejected, its
- * corresponding state object is {state: 'rejected', reason: Object}.
- *
- * @param {!Array} promises or values
- * @return {!Promise.<!Array>} Promise fulfilled with state objects for each input
- */
-function allSettled(promises) {
-  if (!Array.isArray(promises)) {
-    throw Error('The input to "allSettled()" should be an array of Promise or values')
-  }
-  if (!promises.length) return resolve([])
-
-  var outputs = []
-  var promise = new Promise()
-  var counter = promises.length
-
-  for (var i = 0; i < promises.length; i += 1) {
-    if (!promises[i] || !isPromiseLike(promises[i])) {
-      replaceElFulfilled(outputs, i, promises[i])
-      if ((--counter) === 0) promise.resolve(outputs)
-    } else {
-      promises[i]
-        .then(replaceElFulfilled.bind(null, outputs, i), replaceElRejected.bind(null, outputs, i))
-        .then(function () {
-          if ((--counter) === 0) promise.resolve(outputs)
-        })
-    }
-  }
-
-  return promise
-}
-
-/**
- * Create a new Promise which looks like a deferred
- *
- * @return {!Promise}
- */
-function defer() {
-  return new Promise()
-}
-
-/**
- * Return a promise which will wait a specified number of ms to resolve
- *
- * @param {*} delayMsOrVal A delay (in ms) if this takes one argument, or ther
- *     return value if it takes two.
- * @param {number=} opt_delayMs
- * @return {!Promise}
- */
-function delay(delayMsOrVal, opt_delayMs) {
-  var returnVal = undefined
-  var delayMs = delayMsOrVal
-  if (typeof opt_delayMs != 'undefined') {
-    delayMs = opt_delayMs
-    returnVal = delayMsOrVal
-  }
-
-  if (typeof delayMs != 'number') {
-    throw new Error('Bad delay value ' + delayMs)
-  }
-
-  var defer = new Promise()
-  setTimeout(function onDelay() {
-    defer.resolve(returnVal)
-  }, delayMs)
-  return defer
-}
-
-/**
- * Returns a promise that has the same result as `this`, but fulfilled
- * after at least ms milliseconds
- * @param {number} ms
- */
-Promise.prototype.delay = function (ms) {
-  return this.then(function (val) {
-    return delay(val, ms)
-  })
-}
-
-/**
- * Return a promise which will evaluate the function fn in a future turn with
- * the provided args
- *
- * @param {function(...)} fn
- * @param {...*} var_args a variable number of arguments
- * @return {!Promise}
- */
-function fcall(fn, var_args) {
-  var rootArgs = Array.prototype.slice.call(arguments, 1)
-  var defer = new Promise()
-  nextTick(nextTickCallback.bind(null, defer, fn, undefined, rootArgs))
-  return defer
-}
-
-
-/**
- * Returns a promise that will be invoked with the result of a node style
- * callback. All args to fn should be given except for the final callback arg
- *
- * @param {function(...)} fn
- * @param {...*} var_args a variable number of arguments
- * @return {!Promise}
- */
-function nfcall(fn, var_args) {
-  // Insert an undefined argument for scope and let bindPromise() do the work.
-  var args = Array.prototype.slice.call(arguments, 0)
-  args.splice(1, 0, undefined)
-  return bindPromise.apply(undefined, args)()
-}
-
-
-/**
- * Binds a function to a scope with an optional number of curried arguments. Attaches
- * a node style callback as the last argument and returns a promise
- *
- * @param {function(...)} fn
- * @param {Object} scope
- * @param {...*} var_args a variable number of arguments
- * @return {function(...)}: !Promise}
- */
-function bindPromise(fn, scope, var_args) {
-  var rootArgs = Array.prototype.slice.call(arguments, 2)
-  return function onBoundPromise(var_args) {
-    var defer = new Promise()
-    try {
-      fn.apply(scope, rootArgs.concat(Array.prototype.slice.call(arguments, 0), defer.makeNodeResolver()))
-    } catch (e) {
-      defer.reject(e)
-    }
-    return defer
-  }
-}
-
-module.exports = {
-    all: all
-  , bindPromise: bindPromise
-  , defer: defer
-  , delay: delay
-  , fcall: fcall
-  , isPromise: isPromise
-  , isPromiseLike: isPromiseLike
-  , nfcall: nfcall
-  , resolve: resolve
-  , reject: reject
-  , stats: stats
-  , allSettled: allSettled
-  , Promise: Promise
-  , getNextTickFunction: getNextTickFunction
-  , setNextTickFunction: setNextTickFunction
-}
-
-}).call(this,require('_process'))
-},{"_process":72}],75:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 module.exports.RTCSessionDescription = window.RTCSessionDescription ||
 	window.mozRTCSessionDescription;
 module.exports.RTCPeerConnection = window.RTCPeerConnection ||
@@ -2170,7 +1278,7 @@ module.exports.RTCPeerConnection = window.RTCPeerConnection ||
 module.exports.RTCIceCandidate = window.RTCIceCandidate ||
 	window.mozRTCIceCandidate;
 
-},{}],76:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 var Negotiator = require('./negotiator');
@@ -2439,7 +1547,7 @@ DataConnection.prototype.handleMessage = function(message) {
 
 module.exports = DataConnection;
 
-},{"./negotiator":78,"./util":81,"eventemitter3":82,"reliable":85}],77:[function(require,module,exports){
+},{"./negotiator":76,"./util":79,"eventemitter3":80,"reliable":83}],75:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 var Negotiator = require('./negotiator');
@@ -2536,7 +1644,7 @@ MediaConnection.prototype.close = function() {
 
 module.exports = MediaConnection;
 
-},{"./negotiator":78,"./util":81,"eventemitter3":82}],78:[function(require,module,exports){
+},{"./negotiator":76,"./util":79,"eventemitter3":80}],76:[function(require,module,exports){
 var util = require('./util');
 var RTCPeerConnection = require('./adapter').RTCPeerConnection;
 var RTCSessionDescription = require('./adapter').RTCSessionDescription;
@@ -2847,7 +1955,7 @@ Negotiator.handleCandidate = function(connection, ice) {
 
 module.exports = Negotiator;
 
-},{"./adapter":75,"./util":81}],79:[function(require,module,exports){
+},{"./adapter":73,"./util":79}],77:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 var Socket = require('./socket');
@@ -3346,7 +2454,7 @@ Peer.prototype.listAllPeers = function(cb) {
 
 module.exports = Peer;
 
-},{"./dataconnection":76,"./mediaconnection":77,"./socket":80,"./util":81,"eventemitter3":82}],80:[function(require,module,exports){
+},{"./dataconnection":74,"./mediaconnection":75,"./socket":78,"./util":79,"eventemitter3":80}],78:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 
@@ -3562,7 +2670,7 @@ Socket.prototype.close = function() {
 
 module.exports = Socket;
 
-},{"./util":81,"eventemitter3":82}],81:[function(require,module,exports){
+},{"./util":79,"eventemitter3":80}],79:[function(require,module,exports){
 var defaultConfig = {'iceServers': [{ 'url': 'stun:stun.l.google.com:19302' }]};
 var dataCount = 1;
 
@@ -3878,7 +2986,7 @@ var util = {
 
 module.exports = util;
 
-},{"./adapter":75,"js-binarypack":83}],82:[function(require,module,exports){
+},{"./adapter":73,"js-binarypack":81}],80:[function(require,module,exports){
 'use strict';
 
 /**
@@ -4109,7 +3217,7 @@ EventEmitter.EventEmitter3 = EventEmitter;
 //
 module.exports = EventEmitter;
 
-},{}],83:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 var BufferBuilder = require('./bufferbuilder').BufferBuilder;
 var binaryFeatures = require('./bufferbuilder').binaryFeatures;
 
@@ -4630,7 +3738,7 @@ function utf8Length(str){
   }
 }
 
-},{"./bufferbuilder":84}],84:[function(require,module,exports){
+},{"./bufferbuilder":82}],82:[function(require,module,exports){
 var binaryFeatures = {};
 binaryFeatures.useBlobBuilder = (function(){
   try {
@@ -4696,7 +3804,7 @@ BufferBuilder.prototype.getBuffer = function() {
 
 module.exports.BufferBuilder = BufferBuilder;
 
-},{}],85:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 var util = require('./util');
 
 /**
@@ -5016,7 +4124,7 @@ Reliable.prototype.onmessage = function(msg) {};
 
 module.exports.Reliable = Reliable;
 
-},{"./util":86}],86:[function(require,module,exports){
+},{"./util":84}],84:[function(require,module,exports){
 var BinaryPack = require('js-binarypack');
 
 var util = {
@@ -5113,12 +4221,16 @@ var util = {
 
 module.exports = util;
 
-},{"js-binarypack":83}],87:[function(require,module,exports){
+},{"js-binarypack":81}],85:[function(require,module,exports){
 'use strict';
 
 var _createClass = require('babel-runtime/helpers/create-class')['default'];
 
 var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
+
+var _Promise = require('babel-runtime/core-js/promise')['default'];
+
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
 
 Object.defineProperty(exports, '__esModule', {
   value: true
@@ -5128,7 +4240,9 @@ var _hashmap = require('hashmap');
 
 var _peerjs = require('peerjs');
 
-var _kew = require('kew');
+var _peerjs2 = _interopRequireDefault(_peerjs);
+
+//import {Promise} from 'kew'
 
 var PeerConnection = (function () {
   function PeerConnection(peerJSConnection) {
@@ -5163,25 +4277,25 @@ var PeerConnection = (function () {
     value: function connect(peerId) {
       var _this2 = this;
 
-      return new _kew.Promise(function (onFullfilled, onRejected) {
+      return new _Promise(function (resolve, reject) {
         var dataConnection = _this2.peerJSConnection.connect(peerId);
-        _this2.peerJSConnection.once('error', onRejected);
+        _this2.peerJSConnection.once('error', reject);
         dataConnection.once('open', function () {
-          _this2.peerJSConnection.off('error', onRejected);
+          _this2.peerJSConnection.off('error', reject);
           _this2.addDataConnection.apply(_this2, [dataConnection]);
-          onFullfilled(dataConnection);
+          resolve(dataConnection);
         });
       });
     }
   }], [{
     key: 'create',
     value: function create(id) {
-      return new _kew.Promise(function (onFullfilled, onRejected) {
-        var peerJSConnection = new _peerjs.Peer(id, { key: PeerConnection.peerJSAPIKey, debug: 3 });
+      return new _Promise(function (resolve, reject) {
+        var peerJSConnection = new _peerjs2['default'](id, { key: PeerConnection.peerJSAPIKey, debug: 3 });
         peerJSConnection.once('open', function () {
-          peerJSConnection.off('error', onRejected);
-          onFullfilled(new PeerConnection(peerJSConnection));
-        }).once('error', onRejected);
+          peerJSConnection.off('error', reject);
+          resolve(new PeerConnection(peerJSConnection));
+        }).once('error', reject);
       });
     }
   }]);
@@ -5202,70 +4316,10 @@ exports['default'] = {
   connectTo: function connectTo(id) {
     return peerConnection.connect(id);
   }
-}
-
-/*
-var PeerConnectionManager = (function() {
-  var basePeerId = 10
-  var peerIdLimit = 50
-  var self = this
-
-  function connect (peerId) {
-    function rejected (err) {
-      if(err.type === 'unavailable-id' || peerId === peerIdLimit)
-        return connect(peerId + 1)
-      return null
-    }
-    return PeerConnection.create(peerId).catch(rejected)
-  }
-
-  connect(basePeerId).then(function(peerConnection) {
-    if(PeerConnection === null) {
-      console.log('Connection error')
-    } else {
-      console.log(peerConnection)
-      self.baseConnection = peerConnection
-    }
-  })
-
-  self.listAllPeers = function(callback) {
-    function connect (peerId) {
-      function increment () {
-        return connect(peerId + 1)
-      }
-      function fullfilled (dataConnection) {
-        callback(dataConnection)
-        return increment()
-      }
-
-      if(peerId === parseInt(self.baseConnection.id))
-        peerId += 1
-
-      if(peerId <= peerIdLimit)
-        return self.baseConnection.connect(peerId).then(fullfilled, increment)
-      else
-        return null
-    }
-    return connect(basePeerId)
-  }
-
-  self.listAllPeers2 = function() {
-    var promises = []
-
-    for (var id = basePeerId id < peerIdLimit id++) {
-      if(id !== parseInt(self.baseConnection.id))
-        promises.push(self.baseConnection.connect(id))
-    }
-
-    return Promise.all(promises)
-  }
-
-  return self
-})()*/
-;
+};
 module.exports = exports['default'];
 
-},{"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"hashmap":73,"kew":74,"peerjs":79}],88:[function(require,module,exports){
+},{"babel-runtime/core-js/promise":5,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/interop-require-default":10,"hashmap":72,"peerjs":77}],86:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5365,7 +4419,7 @@ var Bullet = _melonJS2['default'].Entity.extend({
 exports.Bullet = Bullet;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":90,"babel-runtime/helpers/interop-require-default":10}],89:[function(require,module,exports){
+},{"../game.js":88,"babel-runtime/helpers/interop-require-default":10}],87:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5393,8 +4447,111 @@ var _gameJs2 = _interopRequireDefault(_gameJs);
 
 var _BulletJs = require('./Bullet.js');
 
+var Body = (function (_me$Renderable) {
+  function Body() {
+    _classCallCheck(this, Body);
+
+    var shadow = _gameJs2['default'].texture.createSpriteFromName('tee_body_shadow');
+    _get(Object.getPrototypeOf(Body.prototype), 'constructor', this).call(this);
+    _get(Object.getPrototypeOf(Body.prototype), 'init', this).call(this, 0, 0, shadow.width, shadow.height);
+    this.shadow = shadow;
+    this.sprite = _gameJs2['default'].texture.createSpriteFromName('tee_body');
+    this.sprite.pos.add(new _melonJS2['default'].Vector2d(3, 2));
+  }
+
+  _inherits(Body, _me$Renderable);
+
+  _createClass(Body, [{
+    key: 'drawShadow',
+    value: function drawShadow(renderer) {
+      this.shadow.draw(renderer);
+    }
+  }, {
+    key: 'draw',
+    value: function draw(renderer) {
+      this.sprite.draw(renderer);
+    }
+  }]);
+
+  return Body;
+})(_melonJS2['default'].Renderable);
+
+var Eyes = (function (_me$Renderable2) {
+  function Eyes(player) {
+    _classCallCheck(this, Eyes);
+
+    _get(Object.getPrototypeOf(Eyes.prototype), 'constructor', this).call(this);
+    _get(Object.getPrototypeOf(Eyes.prototype), 'init', this).call(this, 11, 11, 1, 1);
+    this.leftEye = _gameJs2['default'].texture.createSpriteFromName('tee_eye');
+    this.rightEye = _gameJs2['default'].texture.createSpriteFromName('tee_eye');
+    this.player = player;
+
+    this.h = Math.cos(Math.atan2(-1, -1));
+    this.v = Math.sin(Math.atan2(-1, -1));
+  }
+
+  _inherits(Eyes, _me$Renderable2);
+
+  _createClass(Eyes, [{
+    key: 'update',
+    value: function update(dt) {
+      var angle = this.player.angleToCursor();
+      this.pos.x = 11 + (Math.cos(angle) - this.h) * 15;
+      this.pos.y = 9 + (Math.sin(angle) - this.v) * 10;
+      this.leftEye.pos.y = this.rightEye.pos.y = this.pos.y;
+      this.leftEye.pos.x = this.pos.x;
+      this.rightEye.pos.x = this.pos.x + this.leftEye.width + 1;
+    }
+  }, {
+    key: 'draw',
+    value: function draw(renderer) {
+      this.leftEye.draw(renderer);
+      this.rightEye.draw(renderer);
+    }
+  }]);
+
+  return Eyes;
+})(_melonJS2['default'].Renderable);
+
+var Foot = (function (_me$Renderable3) {
+  function Foot(parentHeight) {
+    var x = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+
+    _classCallCheck(this, Foot);
+
+    var shadow = _gameJs2['default'].texture.createSpriteFromName('tee_foot_shadow');
+    _get(Object.getPrototypeOf(Foot.prototype), 'constructor', this).call(this);
+    _get(Object.getPrototypeOf(Foot.prototype), 'init', this).call(this, 5 + x, parentHeight - shadow.height - 4, shadow.width, shadow.height);
+    this.shadow = shadow;
+    this.shadow.pos.setV(this.pos);
+    this.shadow.scale(1.4, 1.4);
+    this.sprite = _gameJs2['default'].texture.createSpriteFromName('tee_foot');
+    this.sprite.pos.setV(this.pos);
+    this.sprite.pos.add(new _melonJS2['default'].Vector2d(2, 2));
+    this.sprite.scale(1.5, 1.5);
+  }
+
+  _inherits(Foot, _me$Renderable3);
+
+  _createClass(Foot, [{
+    key: 'drawShadow',
+    value: function drawShadow(renderer) {
+      this.shadow.draw(renderer);
+    }
+  }, {
+    key: 'draw',
+    value: function draw(renderer) {
+      this.sprite.draw(renderer);
+    }
+  }]);
+
+  return Foot;
+})(_melonJS2['default'].Renderable);
+
 var Player = (function (_me$Entity) {
   function Player(x, y, settings) {
+    var _this = this;
+
     _classCallCheck(this, Player);
 
     _get(Object.getPrototypeOf(Player.prototype), 'constructor', this).call(this);
@@ -5403,117 +4560,93 @@ var Player = (function (_me$Entity) {
     this.spriteheight = 33;
 
     // set the default horizontal & vertical speed (accel vector)
-    this.body.setVelocity(10, 20);
-    //this.updateColRect(18, 32, 12, 52)
+    this.body.setVelocity(10, 18.5);
+    this.body.gravity = 0.58;
+    // Customize collision size and type
+    var hitBoxCorrection = 8;
+    this.body.setShape(hitBoxCorrection, hitBoxCorrection, this.width - hitBoxCorrection, this.height - hitBoxCorrection);
+    this.body.collisionType = _melonJS2['default'].collision.types.PLAYER_OBJECT;
 
-    this.renderable = _gameJs2['default'].texture.createSpriteFromName('tee');
-    /*game.texture.createAnimationFromName([
-      "jump_1", "jump_2", "jump_3",
-      "stand_1", "stand_2", "stand_3",
-      "walk_1", "walk_2", "walk_3", "walk_4"
-    ])
-     this.renderable.addAnimation("stand", ["stand_1", "stand_2"], 300)
-    this.renderable.addAnimation("jump", ["jump_1", "jump_2", "jump_3"])
-    this.renderable.addAnimation("walkRecursive", ["walk_1", "walk_2", "walk_3", "walk_4"], 50)*/
+    this.renderable = new Body();
+    this.eyes = new Eyes(this);
+    this.leftFoot = new Foot(this.height);
+    this.rightFoot = new Foot(this.height, 25);
 
-    //this.changeAnimation("stand")
-
-    //this.anchorPoint.set(0, 0)
-    //this.ylimit = me.game.currentLevel.height
-
-    // set the display to follow our position on both axis
+    // set the display to follow o  ur position on both axis
     //me.debug.renderHitBox = true
     this.alwaysUpdate = true;
 
-    this.walkRight = true;
-    this.renderable.flipX(!this.walkRight);
-
-    this.center = new _melonJS2['default'].Vector2d(this.pos.x + this.getBounds().width / 2, this.pos.y + this.getBounds().height / 2);
+    this.getCenter = function () {
+      return new _melonJS2['default'].Vector2d(_this.pos.x + _this.getBounds().width / 2, _this.pos.y + _this.getBounds().height / 2);
+    };
+    this.center = this.getCenter();
 
     _melonJS2['default'].game.viewport.follow(this.center, _melonJS2['default'].game.viewport.AXIS.BOTH);
     _melonJS2['default'].game.viewport.setDeadzone(0, 0);
-    //this.life = 1000
+
+    this.life = 10;
+    this.shield = 10;
+
+    this.multipleJump = 1;
 
     // Register a pool with class Bullet to quickly instantiate bullets in update -> shoot
     _melonJS2['default'].pool.register('bullet', _BulletJs.Bullet, true);
-    this.body.collisionType = _melonJS2['default'].collision.types.PLAYER_OBJECT;
+
+    window.player = this;
   }
 
   _inherits(Player, _me$Entity);
 
   _createClass(Player, [{
+    key: 'angleToCursor',
+    value: function angleToCursor() {
+      return this.angleToPoint(_gameJs2['default'].cursor.pos);
+    }
+  }, {
     key: 'update',
-
-    /*changeAnimation(animationName) {
-      if (!this.renderable.isCurrentAnimation(animationName)) {
-        this.renderable.setCurrentAnimation(animationName)
-      }
-    }*/
-
     value: function update(dt) {
+      this.eyes.update(dt);
       //socket.emit("action", )
-      if (_melonJS2['default'].input.isKeyPressed('left') || _melonJS2['default'].input.isKeyPressed('right')) {
-        if (_melonJS2['default'].input.isKeyPressed('left')) {
-          this.walkRight = false;
 
-          // update the entity velocity
-          this.body.vel.x -= this.body.accel.x * _melonJS2['default'].timer.tick;
-        } else {
-          this.walkRight = true;
-
-          // update the entity velocity
-          this.body.vel.x += this.body.accel.x * _melonJS2['default'].timer.tick;
-        }
-        if (!this.jumping && !this.falling)
-          //this.changeAnimation("walkRecursive")
-
-          this.renderable.flipX(this.walkRight);
+      if (_melonJS2['default'].input.isKeyPressed('left')) {
+        this.body.vel.x -= this.body.accel.x * _melonJS2['default'].timer.tick;
+      } else if (_melonJS2['default'].input.isKeyPressed('right')) {
+        this.body.vel.x += this.body.accel.x * _melonJS2['default'].timer.tick;
       } else {
-        if (!this.jumping && !this.falling) {
-          //this.changeAnimation("stand")
-          this.body.vel.x = 0;
-        }
+        this.body.vel.x += -this.body.vel.x * 0.5;
       }
 
       if (_melonJS2['default'].input.isKeyPressed('jump')) {
-        //this.changeAnimation("jump")
+        this.body.jumping = true;
 
-        // make sure we are not already jumping or falling
-        if (!this.jumping && !this.falling) {
-
-          // set current vel to the maximum defined value
-          // gravity will then do the rest
-          this.body.vel.y = -this.body.maxVel.y * _melonJS2['default'].timer.tick;
-          // set the jumping flag
-          this.jumping = true
-
-          // play some audio
-          //me.audio.play("jump")
-          ;
+        if (this.multipleJump <= 2) {
+          // easy 'math' for double jump
+          this.body.vel.y -= this.body.maxVel.y * this.multipleJump++ * _melonJS2['default'].timer.tick;
         }
-      } else {
-        this.jumping = false;
-      }
-
-      if (_melonJS2['default'].input.isKeyPressed('shoot')) {
-        // Angle in radian between character and cursor
-        var direction = this.angleToPoint(_gameJs2['default'].cursor.pos);
-
-        // Shoot bullet
-        var bullet = _melonJS2['default'].pool.pull('bullet', this.pos.x + Math.floor(this.width / 2), this.pos.y + Math.floor(this.height / 2), direction);
-        _melonJS2['default'].game.world.addChild(bullet);
+      } else if (!this.body.falling && !this.body.jumping) {
+        // reset the multipleJump flag if on the ground
+        this.multipleJump = 1;
+      } else if (this.body.falling && this.multipleJump < 2) {
+        // reset the multipleJump flag if falling
+        this.multipleJump = 2;
       }
 
       // check & update player movement
-      this.body.update();
+      this.body.update(dt);
       _melonJS2['default'].collision.check(this);
+      this.center.setV(this.getCenter());
 
-      _get(Object.getPrototypeOf(Player.prototype), 'update', this).call(this, dt);
+      if (_melonJS2['default'].input.isKeyPressed('shoot')) {
+        var direction = this.angleToCursor();
+        var bullet = _melonJS2['default'].pool.pull('bullet', this.center.x, this.center.y, direction);
+        _melonJS2['default'].game.world.addChild(bullet);
+      }
 
-      this.center.x = this.pos.x + this.getBounds().width / 2;
-      this.center.y = this.pos.y + this.getBounds().height / 2;
-
-      return true;
+      if (this.body.vel.x != 0 || this.body.vel.y != 0) {
+        _get(Object.getPrototypeOf(Player.prototype), 'update', this).call(this, dt);
+        return true;
+      }
+      return false;
     }
   }, {
     key: 'onCollision',
@@ -5522,6 +4655,30 @@ var Player = (function (_me$Entity) {
       //console.log("Collision with Other", other)
       return true;
     }
+  }, {
+    key: 'draw',
+    value: function draw(renderer) {
+      // draw the sprite if defined
+      if (this.renderable) {
+        // translate the renderable position (relative to the entity)
+        // and keeps it in the entity defined bounds
+        var x = ~ ~(0.5 + this.pos.x + this.body.pos.x + this.anchorPoint.x * (this.body.width - this.renderable.width));
+        var y = ~ ~(0.5 + this.pos.y + this.body.pos.y + this.anchorPoint.y * (this.body.height - this.renderable.height));
+
+        renderer.save();
+        renderer.translate(x, y);
+        //Shadows sprite
+        this.leftFoot.drawShadow(renderer);
+        this.renderable.drawShadow(renderer);
+        this.rightFoot.drawShadow(renderer);
+        //Front sprite
+        this.leftFoot.draw(renderer);
+        this.renderable.draw(renderer);
+        this.eyes.draw(renderer);
+        this.rightFoot.draw(renderer);
+        renderer.restore();
+      }
+    }
   }]);
 
   return Player;
@@ -5529,11 +4686,9 @@ var Player = (function (_me$Entity) {
 
 exports['default'] = Player;
 module.exports = exports['default'];
-// to remove the bullet :
-// me.game.world.removeChild(bullet)
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":90,"./Bullet.js":88,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],90:[function(require,module,exports){
+},{"../game.js":88,"./Bullet.js":86,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],88:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5561,7 +4716,7 @@ var _uiScreenJs2 = _interopRequireDefault(_uiScreenJs);
 
 var game = {
 
-  width: 1280,
+  width: 1152,
   height: 720,
 
   connection: require('./connection.js'),
@@ -5593,10 +4748,8 @@ var game = {
     game.debug = false;
     if (document.location.hash === '#debug') {
       game.debug = true;
+      _melonJS2['default'].plugin.register.defer(game, _melonJS2['default'].debug.Panel, 'debug');
     }
-    /*if (document.location.hash === "#debug") {
-      me.plugin.register.defer(game, me.debug.Panel, "debug")
-    }*/
   },
 
   loaded: function loaded() {
@@ -5604,8 +4757,8 @@ var game = {
     game.uiTexture = new _melonJS2['default'].video.renderer.Texture(_melonJS2['default'].loader.getJSON('ui'), _melonJS2['default'].loader.getImage('ui'));
 
     function applyFontStyle(font) {
-      font.strokeStyle.parseCSS('rgba(0, 0, 0, 0.70)');
-      font.lineWidth = 4.5;
+      font.strokeStyle.parseCSS('rgba(0, 0, 0, 0.60)');
+      font.lineWidth = 5;
       font.textAlign = 'center';
       font.textBaseline = 'hanging';
     }
@@ -5631,7 +4784,7 @@ exports['default'] = game;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./connection.js":87,"./entity/Player.js":89,"./resources.js":91,"./ui/Cursor.js":95,"./ui/Screen.js":99,"babel-runtime/helpers/interop-require-default":10}],91:[function(require,module,exports){
+},{"./connection.js":85,"./entity/Player.js":87,"./resources.js":89,"./ui/Cursor.js":93,"./ui/Screen.js":97,"babel-runtime/helpers/interop-require-default":10}],89:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5648,7 +4801,7 @@ exports["default"] = [
 { name: "ui", type: "json", src: "data/ui/ui.json" }, { name: "ui", type: "image", src: "data/ui/ui.png" }];
 module.exports = exports["default"];
 
-},{}],92:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5714,12 +4867,8 @@ var Box = (function (_Component) {
         width: width || innerComponent.width + padding.right + padding.left,
         height: height || innerComponent.height + padding.top + padding.bottom
       });
-      innerComponent.parent = this;
-      this.innerComponent = innerComponent;
-    } else {
-      _get(Object.getPrototypeOf(Box.prototype), 'constructor', this).call(this, options);
-      this.innerComponent = null;
-    }
+    } else _get(Object.getPrototypeOf(Box.prototype), 'constructor', this).call(this, options);
+    this._inner = null;
 
     this.padding = padding;
     this.radius = radius;
@@ -5729,9 +4878,9 @@ var Box = (function (_Component) {
     this.setOpacity(opacity);
 
     if (innerComponent) {
-      this.innerComponent.moveTo({ x: this.pos.x + padding.top, y: this.pos.y + padding.left });
-      if (width) this.innerComponent.resize({ width: width + padding.right + padding.left });
-      if (height) this.innerComponent.resize({ height: height + padding.top + padding.bottom });
+      this.innerComponent = innerComponent;
+      if (width) innerComponent.resize({ width: width + padding.right + padding.left });
+      if (height) innerComponent.resize({ height: height + padding.top + padding.bottom });
     }
   }
 
@@ -5739,27 +4888,31 @@ var Box = (function (_Component) {
 
   _createClass(Box, [{
     key: 'moveTo',
-    value: function moveTo(_ref) {
+    value: function moveTo() {
+      var _ref = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
       var x = _ref.x;
       var y = _ref.y;
 
       x = x || this.pos.x;
       y = y || this.pos.y;
       _get(Object.getPrototypeOf(Box.prototype), 'moveTo', this).call(this, { x: x, y: y });
-      if (this.innerComponent) this.innerComponent.moveTo({ x: x + this.padding.top, y: y + this.padding.left });
+      if (this._inner) this._inner.moveTo({ x: x + this.padding.left, y: y + this.padding.top });
     }
   }, {
     key: 'resize',
-    value: function resize(_ref2) {
+    value: function resize() {
+      var _ref2 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
       var width = _ref2.width;
       var height = _ref2.height;
       var childResize = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
 
-      if (this.innerComponent) {
-        if (childResize) this.innerComponent.resize({ width: width, height: height });
+      if (this._inner) {
+        if (childResize) this._inner.resize({ width: width, height: height });
         _get(Object.getPrototypeOf(Box.prototype), 'resize', this).call(this, {
-          width: this.innerComponent.width + this.padding.right + this.padding.left,
-          height: this.innerComponent.height + this.padding.top + this.padding.bottom
+          width: this._inner.width + this.padding.right + this.padding.left,
+          height: this._inner.height + this.padding.top + this.padding.bottom
         });
       } else {
         _get(Object.getPrototypeOf(Box.prototype), 'resize', this).call(this, { width: width, height: height });
@@ -5769,8 +4922,8 @@ var Box = (function (_Component) {
     key: 'update',
     value: function update(dt) {
       var updated = _get(Object.getPrototypeOf(Box.prototype), 'update', this).call(this, dt);
-      if (this.innerComponent) {
-        updated = this.innerComponent.update(dt) || updated;
+      if (this._inner) {
+        updated = this._inner.update(dt) || updated;
       }
       return updated;
     }
@@ -5778,8 +4931,8 @@ var Box = (function (_Component) {
     key: 'draw',
     value: function draw(renderer) {
       _get(Object.getPrototypeOf(Box.prototype), 'draw', this).apply(this, arguments);
-      if (this.innerComponent) {
-        this.innerComponent.draw.apply(this.innerComponent, arguments);
+      if (this._inner) {
+        this._inner.draw.apply(this._inner, arguments);
       }
     }
   }, {
@@ -5826,21 +4979,31 @@ var Box = (function (_Component) {
   }, {
     key: 'onChildResize',
     value: function onChildResize() {
-      if (this.innerComponent) {
-        this.resize(this.innerComponent, false);
+      if (this._inner) {
+        this.resize(this._inner, false);
       }
     }
   }, {
     key: 'onResetEvent',
     value: function onResetEvent() {
       _get(Object.getPrototypeOf(Box.prototype), 'onResetEvent', this).call(this);
-      if (this.innerComponent) this.innerComponent.onResetEvent();
+      if (this._inner) this._inner.onResetEvent();
     }
   }, {
     key: 'onDestroyEvent',
     value: function onDestroyEvent() {
       _get(Object.getPrototypeOf(Box.prototype), 'onDestroyEvent', this).call(this);
-      if (this.innerComponent) this.innerComponent.onDestroyEvent();
+      if (this._inner) this._inner.onDestroyEvent();
+    }
+  }, {
+    key: 'innerComponent',
+    set: function set(component) {
+      if (component) {
+        this._inner = component;
+        component.parent = this;
+        component.moveTo({ x: this.pos.x + this.padding.left, y: this.pos.y + this.padding.top });
+        this.resize(component, false);
+      }
     }
   }]);
 
@@ -5851,7 +5014,7 @@ exports['default'] = Box;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":90,"./Component.js":94,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],93:[function(require,module,exports){
+},{"../game.js":88,"./Component.js":92,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],91:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5903,7 +5066,7 @@ var Button = (function (_Box) {
     var _ref$radius = _ref.radius;
     var radius = _ref$radius === undefined ? 5 : _ref$radius;
     var _ref$padding = _ref.padding;
-    var padding = _ref$padding === undefined ? 5 : _ref$padding;
+    var padding = _ref$padding === undefined ? { top: 2, bottom: 2, right: 5, left: 5 } : _ref$padding;
 
     var textCmp = new _TextJs2['default']({ text: text, width: width, font: font, padding: { top: -2 } });
     _get(Object.getPrototypeOf(Button.prototype), 'constructor', this).call(this, textCmp, { color: color, overOpacity: overOpacity, onClick: onClick, radius: radius, padding: padding });
@@ -5916,6 +5079,9 @@ var Button = (function (_Box) {
     key: 'text',
     get: function get() {
       return this._text.text;
+    },
+    set: function set(t) {
+      return this._text.text = t;
     }
   }]);
 
@@ -5926,7 +5092,7 @@ exports['default'] = Button;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":90,"./Box.js":92,"./Text.js":100,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],94:[function(require,module,exports){
+},{"../game.js":88,"./Box.js":90,"./Text.js":98,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],92:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5976,7 +5142,6 @@ var Component = (function (_me$GUI_Object) {
     var centeredH = _ref$centeredH === undefined ? true : _ref$centeredH;
     var _ref$centeredV = _ref.centeredV;
     var centeredV = _ref$centeredV === undefined ? true : _ref$centeredV;
-    var onScreenResize = _ref.onScreenResize;
 
     if (x == undefined && centeredH !== false) x = _melonJS2['default'].game.viewport.width / 2 - width / 2;else centeredH = false;
     if (y == undefined && centeredV !== false) y = _melonJS2['default'].game.viewport.height / 2 - height / 2;else centeredV = false;
@@ -5992,10 +5157,8 @@ var Component = (function (_me$GUI_Object) {
     this.renderer.needUpdate = true;
     this.parent = null;
 
-    this.isClickable = onClick;
-    this._onClick = onClick || null;
+    this.onClick = onClick;
     this.alwaysUpdate = true;
-    this.onScreenResize = onScreenResize;
     this.onEnterKey = onEnterKey;
     this.onEscKey = onEscKey;
   }
@@ -6034,7 +5197,9 @@ var Component = (function (_me$GUI_Object) {
     }
   }, {
     key: 'resize',
-    value: function resize(_ref4) {
+    value: function resize() {
+      var _ref4 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
       var width = _ref4.width;
       var height = _ref4.height;
 
@@ -6057,7 +5222,9 @@ var Component = (function (_me$GUI_Object) {
     }
   }, {
     key: 'moveTo',
-    value: function moveTo(_ref5) {
+    value: function moveTo() {
+      var _ref5 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
       var x = _ref5.x;
       var y = _ref5.y;
 
@@ -6082,11 +5249,19 @@ var Component = (function (_me$GUI_Object) {
   }, {
     key: 'render',
     value: function render() {
-      if (_gameJs2['default'].debug) Component.renderDebugBox({
-        color: 'red', renderer: this.renderer,
-        width: this.width, height: this.height
-      });
+      if (_gameJs2['default'].debug) {
+        Component.renderDebugBox({
+          color: 'red', renderer: this.renderer,
+          width: this.width, height: this.height
+        });
+      }
       this.renderer.needUpdate = false;
+    }
+  }, {
+    key: 'onScreenResize',
+    value: function onScreenResize() {
+      if (this.centeredV) this.centerV();
+      if (this.centeredH) this.centerH();
     }
   }, {
     key: 'onChildResize',
@@ -6094,12 +5269,12 @@ var Component = (function (_me$GUI_Object) {
   }, {
     key: 'onResetEvent',
     value: function onResetEvent() {
-      _melonJS2['default'].event.subscribe(_melonJS2['default'].event.WINDOW_ONRESIZE, this._onScreenResize);
+      _melonJS2['default'].event.subscribe(_melonJS2['default'].event.WINDOW_ONRESIZE, this.onScreenResize.bind(this));
     }
   }, {
     key: 'onDestroyEvent',
     value: function onDestroyEvent() {
-      _melonJS2['default'].event.unsubscribe(_melonJS2['default'].event.WINDOW_ONRESIZE, this._onScreenResize);
+      _melonJS2['default'].event.unsubscribe(_melonJS2['default'].event.WINDOW_ONRESIZE, this.onScreenResize.bind(this));
     }
   }, {
     key: 'onClick',
@@ -6109,18 +5284,6 @@ var Component = (function (_me$GUI_Object) {
     },
     get: function get() {
       return this._onClick ? this._onClick : _get(Object.getPrototypeOf(Component.prototype), 'onClick', this);
-    }
-  }, {
-    key: 'onScreenResize',
-    set: function set(cb) {
-      var _this = this;
-
-      this._onScreenResize = function () {
-        if (_this.centeredV) _this.centerV();
-        if (_this.centeredH) _this.centerH();
-        if (cb) cb();
-      };
-      return cb;
     }
   }], [{
     key: 'renderDebugBox',
@@ -6163,7 +5326,7 @@ exports['default'] = Component;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":90,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],95:[function(require,module,exports){
+},{"../game.js":88,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],93:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -6255,7 +5418,7 @@ Cursor.visors = {
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":90,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],96:[function(require,module,exports){
+},{"../game.js":88,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],94:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -6416,7 +5579,7 @@ var InputText = (function (_Text) {
   }, {
     key: 'clear',
     value: function clear() {
-      this.textValue = '';
+      this.text = this.textValue = '';
     }
   }, {
     key: 'onResetEvent',
@@ -6494,7 +5657,7 @@ module.exports = exports['default'];
 //this.renderer.restore()
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../util/Arrays.js":102,"./Component.js":94,"./Text.js":100,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],97:[function(require,module,exports){
+},{"../util/Arrays.js":100,"./Component.js":92,"./Text.js":98,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],95:[function(require,module,exports){
 'use strict';
 
 var _get = require('babel-runtime/helpers/get')['default'];
@@ -6511,9 +5674,9 @@ Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
-var _ScreenJs = require('./Screen.js');
+var _gameJs = require('../game.js');
 
-var _ScreenJs2 = _interopRequireDefault(_ScreenJs);
+var _gameJs2 = _interopRequireDefault(_gameJs);
 
 var _BoxJs = require('./Box.js');
 
@@ -6528,31 +5691,40 @@ var _ButtonJs = require('./Button.js');
 var _ButtonJs2 = _interopRequireDefault(_ButtonJs);
 
 var Menubar = (function (_Box) {
-  function Menubar() {
+  function Menubar(screen) {
     var _this = this;
 
     _classCallCheck(this, Menubar);
 
-    var margin = 5;
-    _get(Object.getPrototypeOf(Menubar.prototype), 'constructor', this).call(this, { y: margin, y: margin });
-    this.innerComponent = new _PanelJs2['default']([new _ButtonJs2['default']({ text: 'Join User', onClick: this.onUserJoin }), new _ButtonJs2['default']({ text: 'Change Username', onClick: this.onChangeUsername })]);
+    var margin = 15,
+        padding = 15,
+        radius = 10;
+    _get(Object.getPrototypeOf(Menubar.prototype), 'constructor', this).call(this, { y: margin, y: margin, padding: padding, radius: radius });
+    var joinButton = new _ButtonJs2['default']({ text: 'Join User' });
+    joinButton.onClick = screen.joinUser.bind(screen);
+    this.innerComponent = new _PanelJs2['default']([joinButton], { layout: _PanelJs2['default'].HORIZONTAL });
+    this.widthResize = function () {
+      return _this.resize({ width: me.game.viewport.width - margin * 2 - padding * 2 });
+    };
+    this.widthResize();
     this.onEscKey = function () {
-      return _ScreenJs2['default'].close(_this);
+      return screen.close(_this);
     };
   }
 
   _inherits(Menubar, _Box);
 
   _createClass(Menubar, [{
-    key: 'onUserJoin',
-    value: function onUserJoin() {
-      _ScreenJs2['default'].joinUser();
+    key: 'onScreenResize',
+    value: function onScreenResize() {
+      _get(Object.getPrototypeOf(Menubar.prototype), 'onScreenResize', this).call(this);
+      this.widthResize();
     }
-  }, {
-    key: 'onChangeUsername',
-    value: function onChangeUsername() {
-      _ScreenJs2['default'].askUserName();
-    }
+
+    //onChangeUsername() {
+    //  Screen.askUserName()
+    //}
+
   }]);
 
   return Menubar;
@@ -6561,7 +5733,7 @@ var Menubar = (function (_Box) {
 exports['default'] = Menubar;
 module.exports = exports['default'];
 
-},{"./Box.js":92,"./Button.js":93,"./Panel.js":98,"./Screen.js":99,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],98:[function(require,module,exports){
+},{"../game.js":88,"./Box.js":90,"./Button.js":91,"./Panel.js":96,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],96:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -6795,7 +5967,7 @@ Panel.GROW = 5;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Component.js":94,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],99:[function(require,module,exports){
+},{"./Component.js":92,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],97:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -6832,6 +6004,110 @@ var _CursorJs2 = _interopRequireDefault(_CursorJs);
 var _MenubarJs = require('./Menubar.js');
 
 var _MenubarJs2 = _interopRequireDefault(_MenubarJs);
+
+var Screen = (function (_me$ScreenObject) {
+  function Screen() {
+    _classCallCheck(this, Screen);
+
+    _get(Object.getPrototypeOf(Screen.prototype), 'constructor', this).call(this);
+    _get(Object.getPrototypeOf(Screen.prototype), 'init', this).call(this);
+    this.menubar = new _MenubarJs2['default'](this);
+    this.masterComponent = new MasterComponent(this);
+    _melonJS2['default'].game.world.addChild(this.masterComponent);
+  }
+
+  _inherits(Screen, _me$ScreenObject);
+
+  _createClass(Screen, [{
+    key: 'onResetEvent',
+    value: function onResetEvent() {
+      _melonJS2['default'].levelDirector.loadLevel('mini');
+      this.bindKeys();
+      this.askUserName();
+    }
+  }, {
+    key: 'onDestroyEvent',
+    value: function onDestroyEvent() {
+      this.unbindKeys();
+    }
+  }, {
+    key: 'bindKeys',
+    value: function bindKeys() {
+      _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.Q, 'left');
+      _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.D, 'right');
+      _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.SPACE, 'jump', false);
+      _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.X, 'shoot', true);
+      _melonJS2['default'].input.bindPointer(_melonJS2['default'].input.KEY.X);
+    }
+  }, {
+    key: 'unbindKeys',
+    value: function unbindKeys() {
+      _melonJS2['default'].input.unbindKey(_melonJS2['default'].input.KEY.Q);
+      _melonJS2['default'].input.unbindKey(_melonJS2['default'].input.KEY.D);
+      _melonJS2['default'].input.unbindKey(_melonJS2['default'].input.KEY.SPACE);
+      _melonJS2['default'].input.unbindKey(_melonJS2['default'].input.KEY.X);
+      _melonJS2['default'].input.unbindPointer(_melonJS2['default'].input.KEY.X);
+    }
+  }, {
+    key: 'open',
+    value: function open(c) {
+      if (this.masterComponent.isEmpty()) {
+        this.unbindKeys();
+        _gameJs2['default'].cursor.switchVisor(_CursorJs2['default'].visors.GUI);
+      }
+      this.masterComponent.add(c);
+      c.onResetEvent();
+    }
+  }, {
+    key: 'close',
+    value: function close(c) {
+      this.masterComponent.remove(c);
+      if (this.masterComponent.isEmpty()) {
+        this.bindKeys();
+        _gameJs2['default'].cursor.switchVisor(_CursorJs2['default'].visors.GUN);
+      }
+    }
+  }, {
+    key: 'askUserName',
+    value: function askUserName() {
+      var askUserName = this.askUserName.bind(this);
+      this.close(this.menubar);
+      _UIUtilJs2['default'].prompt('Enter your username', { cancelable: false, okText: 'Start' }).then(function (username) {
+        _UIUtilJs2['default'].alert('Connecting...', { closable: false });
+        return _gameJs2['default'].connection.init(username);
+      }).then(function () {
+        return _UIUtilJs2['default'].alert('You are connected');
+      }, function (err) {
+        return alertFromErr(err).then(askUserName);
+      });
+    }
+  }, {
+    key: 'joinUser',
+    value: function joinUser() {
+      var joinUser = this.joinUser.bind(this);
+      this.close(this.menubar);
+      _UIUtilJs2['default'].prompt('Enter the username of \nthe player you want to join').then(function (username) {
+        _UIUtilJs2['default'].alert('Connecting...', { closable: false });
+        return _gameJs2['default'].connection.connectTo(username);
+      }).then(function (c) {
+        return _UIUtilJs2['default'].alert('You have joined ' + c.peer);
+      }, function (err) {
+        if (err !== 'UIUtil: prompt canceled') alertFromErr(err).then(joinUser);
+      });
+    }
+  }]);
+
+  return Screen;
+})(_melonJS2['default'].ScreenObject);
+
+exports['default'] = Screen;
+
+function alertFromErr(err) {
+  var message = 'Connection error';
+  if (err.type === 'unavailable-id') message = 'Username already taken';else if (err.type === 'peer-unavailable') message = 'User not connected';
+  console.log(err);
+  return _UIUtilJs2['default'].alert('Error: ' + message);
+}
 
 var MasterComponent = (function (_me$Renderable) {
   function MasterComponent(screen) {
@@ -6907,101 +6183,10 @@ var MasterComponent = (function (_me$Renderable) {
   return MasterComponent;
 })(_melonJS2['default'].Renderable);
 
-var Screen = (function (_me$ScreenObject) {
-  function Screen() {
-    _classCallCheck(this, Screen);
-
-    _get(Object.getPrototypeOf(Screen.prototype), 'constructor', this).call(this);
-    _get(Object.getPrototypeOf(Screen.prototype), 'init', this).call(this);
-    this.menubar = new _MenubarJs2['default']();
-    this.masterComponent = new MasterComponent(this);
-    _melonJS2['default'].game.world.addChild(this.masterComponent);
-  }
-
-  _inherits(Screen, _me$ScreenObject);
-
-  _createClass(Screen, [{
-    key: 'onResetEvent',
-    value: function onResetEvent() {
-      _melonJS2['default'].levelDirector.loadLevel('mini');
-      this.bindKeys();
-      this.askUserName();
-    }
-  }, {
-    key: 'onDestroyEvent',
-    value: function onDestroyEvent() {
-      this.unbindKeys();
-    }
-  }, {
-    key: 'bindKeys',
-    value: function bindKeys() {
-      _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.Q, 'left');
-      _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.D, 'right');
-      _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.SPACE, 'jump', false);
-      _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.X, 'shoot', true);
-      _melonJS2['default'].input.bindPointer(_melonJS2['default'].input.KEY.X);
-    }
-  }, {
-    key: 'unbindKeys',
-    value: function unbindKeys() {
-      _melonJS2['default'].input.unbindKey(_melonJS2['default'].input.KEY.Q);
-      _melonJS2['default'].input.unbindKey(_melonJS2['default'].input.KEY.D);
-      _melonJS2['default'].input.unbindKey(_melonJS2['default'].input.KEY.SPACE);
-      _melonJS2['default'].input.unbindKey(_melonJS2['default'].input.KEY.X);
-      _melonJS2['default'].input.unbindPointer(_melonJS2['default'].input.KEY.X);
-    }
-  }, {
-    key: 'open',
-    value: function open(c) {
-      if (this.masterComponent.isEmpty()) {
-        this.unbindKeys();
-        _gameJs2['default'].cursor.switchVisor(_CursorJs2['default'].visors.GUI);
-      }
-      this.masterComponent.add(c);
-      c.onResetEvent();
-    }
-  }, {
-    key: 'close',
-    value: function close(c) {
-      this.masterComponent.remove(c);
-      if (this.masterComponent.isEmpty()) {
-        this.bindKeys();
-        _gameJs2['default'].cursor.switchVisor(_CursorJs2['default'].visors.GUN);
-      }
-    }
-  }, {
-    key: 'askUserName',
-    value: function askUserName() {
-      var askUserName = _UIUtilJs2['default'].prompt('Enter your username', false).then(function (username) {
-        localStorage.setItem('twjs.username', username);
-        return _gameJs2['default'].connection.init(username);
-      }).then(function () {
-        return _UIUtilJs2['default'].alert('You are connected');
-      }, function (err) {
-        console.log(err);
-        _UIUtilJs2['default'].alert('Error: try again').then(askUserName);
-      });
-    }
-  }, {
-    key: 'joinUser',
-    value: function joinUser() {
-      var joinUser = _UIUtilJs2['default'].prompt('Enter the username of \nthe player you want to join', true).then(function (username) {
-        return _gameJs2['default'].connection.connectTo(username);
-      }).then(function () {}, function (err) {
-        console.log(err);
-        _UIUtilJs2['default'].alert('Error: try again').then(joinUser);
-      });
-    }
-  }]);
-
-  return Screen;
-})(_melonJS2['default'].ScreenObject);
-
-exports['default'] = Screen;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":90,"./Cursor.js":95,"./Menubar.js":97,"./UIUtil.js":101,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],100:[function(require,module,exports){
+},{"../game.js":88,"./Cursor.js":93,"./Menubar.js":95,"./UIUtil.js":99,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],98:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -7201,7 +6386,7 @@ exports['default'] = Text;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":90,"./Component.js":94,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],101:[function(require,module,exports){
+},{"../game.js":88,"./Component.js":92,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],99:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -7279,10 +6464,16 @@ var Alert = new _utilLazyObjJs2['default']({
   okButton: function okButton() {
     return new _ButtonJs2['default']({ text: 'Ok', width: 100 });
   },
+  panel: function panel() {
+    return new _PanelJs2['default']([Alert.titleText, Alert.okButton]);
+  },
   box: function box() {
-    return new _BoxJs2['default'](new _PanelJs2['default']([Alert.titleText, Alert.okButton]));
+    return new _BoxJs2['default'](Alert.panel);
   }
 });
+
+var promptOpened = false;
+var alertOpened = false;
 
 var UIUtil = (function () {
   function UIUtil() {
@@ -7292,9 +6483,19 @@ var UIUtil = (function () {
   _createClass(UIUtil, null, [{
     key: 'prompt',
     value: function prompt(title) {
-      var cancelable = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+      var _ref = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
+      var _ref$cancelable = _ref.cancelable;
+      var cancelable = _ref$cancelable === undefined ? true : _ref$cancelable;
+      var _ref$okText = _ref.okText;
+      var okText = _ref$okText === undefined ? 'Ok' : _ref$okText;
+      var _ref$cancelText = _ref.cancelText;
+      var cancelText = _ref$cancelText === undefined ? 'Cancel' : _ref$cancelText;
+
+      if (promptOpened) _gameJs2['default'].screen.close(Prompt.box);
       Prompt.titleText.text = title;
+      Prompt.okButton.text = okText;
+      Prompt.cancelButton.text = cancelText;
       Prompt.bottomPanel.remove(Prompt.cancelButton);
       if (cancelable) Prompt.bottomPanel.add(Prompt.cancelButton);
 
@@ -7302,28 +6503,43 @@ var UIUtil = (function () {
         Prompt.box.onEnterKey = Prompt.okButton.onClick = function () {
           if (Prompt.inputText.textValue !== '') {
             _gameJs2['default'].screen.close(Prompt.box);
+            promptOpened = false;
             resolve(Prompt.inputText.textValue);
           }
         };
         if (cancelable) {
           Prompt.box.onEscKey = Prompt.cancelButton.onClick = function () {
             _gameJs2['default'].screen.close(Prompt.box);
+            promptOpened = false;
             reject('UIUtil: prompt canceled');
           };
         }
         _gameJs2['default'].screen.open(Prompt.box);
+        promptOpened = true;
       });
     }
   }, {
     key: 'alert',
     value: function alert(title) {
+      var _ref2 = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+      var _ref2$closable = _ref2.closable;
+      var closable = _ref2$closable === undefined ? true : _ref2$closable;
+
+      if (alertOpened) _gameJs2['default'].screen.close(Alert.box);
       Alert.titleText.text = title;
+      Alert.panel.remove(Alert.okButton);
+      if (closable) Alert.panel.add(Alert.okButton);
       return new _Promise(function (resolve, reject) {
-        Alert.box.onEnterKey = Alert.box.onEscKey = Alert.okButton.onClick = function () {
-          _gameJs2['default'].screen.close(Alert.box);
-          resolve();
-        };
+        if (closable) {
+          Alert.box.onEnterKey = Alert.box.onEscKey = Alert.okButton.onClick = function () {
+            _gameJs2['default'].screen.close(Alert.box);
+            alertOpened = false;
+            resolve();
+          };
+        }
         _gameJs2['default'].screen.open(Alert.box);
+        alertOpened = true;
       });
     }
   }]);
@@ -7335,7 +6551,7 @@ exports['default'] = UIUtil;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":90,"../util/LazyObj.js":103,"./Box.js":92,"./Button.js":93,"./InputText.js":96,"./Panel.js":98,"./Text.js":100,"babel-runtime/core-js/promise":5,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/interop-require-default":10}],102:[function(require,module,exports){
+},{"../game.js":88,"../util/LazyObj.js":101,"./Box.js":90,"./Button.js":91,"./InputText.js":94,"./Panel.js":96,"./Text.js":98,"babel-runtime/core-js/promise":5,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/interop-require-default":10}],100:[function(require,module,exports){
 "use strict";
 
 var _createClass = require("babel-runtime/helpers/create-class")["default"];
@@ -7374,7 +6590,7 @@ var Arrays = (function () {
 exports["default"] = Arrays;
 module.exports = exports["default"];
 
-},{"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7}],103:[function(require,module,exports){
+},{"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7}],101:[function(require,module,exports){
 
 /**
  * Creates objects on which you can attach values evaluted only on first access
@@ -7426,4 +6642,4 @@ var LazyObj = (function () {
 exports["default"] = LazyObj;
 module.exports = exports["default"];
 
-},{"babel-runtime/core-js/object/define-property":2,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7}]},{},[90]);
+},{"babel-runtime/core-js/object/define-property":2,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7}]},{},[88]);
