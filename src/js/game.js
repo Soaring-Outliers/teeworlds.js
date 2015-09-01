@@ -41,10 +41,8 @@ var game = {
     game.debug = false
     if (document.location.hash === "#debug") {
       game.debug = true
-    }
-    /*if (document.location.hash === "#debug") {
       me.plugin.register.defer(game, me.debug.Panel, "debug")
-    }*/
+    }
   },
 
   loaded: function () {

@@ -74,12 +74,14 @@ export default class UIUtil {
     if(closable)
       Alert.panel.add(Alert.okButton)
     return new Promise((resolve, reject) => {
-      Alert.box.onEnterKey =
-      Alert.box.onEscKey =
-      Alert.okButton.onClick = () => {
-        game.screen.close(Alert.box)
-        alertOpened = false
-        resolve()
+      if(closable) {
+        Alert.box.onEnterKey =
+        Alert.box.onEscKey =
+        Alert.okButton.onClick = () => {
+          game.screen.close(Alert.box)
+          alertOpened = false
+          resolve()
+        }
       }
       game.screen.open(Alert.box)
       alertOpened = true

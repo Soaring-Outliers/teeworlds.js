@@ -43,16 +43,22 @@ module.exports = {
     src: 'data/ui/originals/*.png',
     dest: 'data/ui/ui.png',
     destCss: 'data/ui/ui.json',
+    padding: 2,
     cssTemplate: melonJSTemplate
   },
   game: {
     src: [
       'data/game/originals/gun.png',
       'data/game/originals/gun_bullet.png',
-      'data/game/originals/tee.png'
+      'data/game/originals/tee/tee_body.png',
+      'data/game/originals/tee/tee_body_shadow.png',
+      'data/game/originals/tee/tee_foot.png',
+      'data/game/originals/tee/tee_foot_shadow.png',
+      'data/game/originals/tee/tee_eye.png'
     ],
     dest: 'data/game/game.png',
     destCss: 'data/game/game.json',
+    padding: 2,
     cssTemplate: melonJSTemplate
   }
 };
