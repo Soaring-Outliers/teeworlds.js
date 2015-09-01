@@ -26,14 +26,21 @@ var Prompt = new LazyObj({
 var Alert = new LazyObj({
   titleText: () => new Text({text: ""}),
   okButton: () => new Button({text: "Ok", width: 100}),
-  box: () => new Box(new Panel([Alert.titleText, Alert.okButton]))
+  panel: () => new Panel([Alert.titleText, Alert.okButton]),
+  box: () => new Box(Alert.panel)
 })
 
+var promptOpened = false
+var alertOpened = false
 
 export default class UIUtil {
 
-  static prompt(title, cancelable = true) {
+  static prompt(title, {cancelable = true, okText = "Ok", cancelText = "Cancel"} = {}) {
+    if(promptOpened)
+      game.screen.close(Prompt.box)
     Prompt.titleText.text = title
+    Prompt.okButton.text = okText
+    Prompt.cancelButton.text = cancelText
     Prompt.bottomPanel.remove(Prompt.cancelButton)
     if(cancelable) Prompt.bottomPanel.add(Prompt.cancelButton)
 
@@ -42,6 +49,7 @@ export default class UIUtil {
       Prompt.okButton.onClick = () => {
         if(Prompt.inputText.textValue !== "") {
           game.screen.close(Prompt.box)
+          promptOpened = false
           resolve(Prompt.inputText.textValue)
         }
       }
@@ -49,23 +57,32 @@ export default class UIUtil {
         Prompt.box.onEscKey =
         Prompt.cancelButton.onClick = () => {
           game.screen.close(Prompt.box)
+          promptOpened = false
           reject("UIUtil: prompt canceled")
         }
       }
       game.screen.open(Prompt.box)
+      promptOpened = true
     })
   }
 
-  static alert(title) {
+  static alert(title, {closable = true} = {}) {
+    if(alertOpened)
+      game.screen.close(Alert.box)
     Alert.titleText.text = title
+    Alert.panel.remove(Alert.okButton)
+    if(closable)
+      Alert.panel.add(Alert.okButton)
     return new Promise((resolve, reject) => {
       Alert.box.onEnterKey =
       Alert.box.onEscKey =
       Alert.okButton.onClick = () => {
         game.screen.close(Alert.box)
+        alertOpened = false
         resolve()
       }
       game.screen.open(Alert.box)
+      alertOpened = true
     })
   }
 }

@@ -102,7 +102,7 @@ export default class InputText extends Text {
   }
 
   clear() {
-    this.textValue = ""
+    this.text = this.textValue = ""
   }
 
   onResetEvent() {

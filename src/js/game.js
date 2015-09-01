@@ -5,7 +5,7 @@ import Screen from './ui/Screen.js'
 
 var game = {
 
-  width: 1280,
+  width: 1152,
   height: 720,
 
   connection: require("./connection.js"),
@@ -58,8 +58,8 @@ var game = {
     )
 
     function applyFontStyle(font) {
-      font.strokeStyle.parseCSS("rgba(0, 0, 0, 0.70)")
-      font.lineWidth = 4.5
+      font.strokeStyle.parseCSS("rgba(0, 0, 0, 0.60)")
+      font.lineWidth = 5
       font.textAlign = "center"
       font.textBaseline = "hanging"
     }

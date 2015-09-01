@@ -6,8 +6,8 @@ export default class Component extends me.GUI_Object {
   constructor(options) {
     super()
     var {
-      x, y, width = 1, height = 1, isClickable = false, onClick = false, onEnterKey, onEscKey,
-      centeredH = true, centeredV = true, onScreenResize
+      x, y, width = 1, height = 1, isClickable = false, onClick = false,
+      onEnterKey, onEscKey, centeredH = true, centeredV = true
     } = options || {}
 
     if (x == undefined && centeredH !== false)
@@ -30,10 +30,8 @@ export default class Component extends me.GUI_Object {
     this.renderer.needUpdate = true
     this.parent = null
 
-    this.isClickable = onClick
-    this._onClick = onClick || null
+    this.onClick = onClick
     this.alwaysUpdate = true
-    this.onScreenResize = onScreenResize
     this.onEnterKey = onEnterKey
     this.onEscKey = onEscKey
   }
@@ -60,7 +58,7 @@ export default class Component extends me.GUI_Object {
     return this.pos.x
   }
 
-  resize({width, height}) {
+  resize({width, height} = {}) {
     var resizeW = !!width
     var resizeH = !!height
     height = height || this.height
@@ -79,7 +77,7 @@ export default class Component extends me.GUI_Object {
     }
   }
 
-  moveTo({x, y}) {
+  moveTo({x, y} = {}) {
     if(x) {
       this.pos.x = x
       this.centeredH = false
@@ -99,11 +97,12 @@ export default class Component extends me.GUI_Object {
   }
 
   render() {
-    if (game.debug)
+    if (game.debug) {
       Component.renderDebugBox({
         color: "red", renderer: this.renderer,
         width: this.width, height: this.height
       })
+    }
     this.renderer.needUpdate = false
   }
 
@@ -116,23 +115,19 @@ export default class Component extends me.GUI_Object {
     return this._onClick ? this._onClick : super.onClick
   }
 
-  set onScreenResize(cb) {
-    this._onScreenResize = () => {
-      if(this.centeredV) this.centerV()
-      if(this.centeredH) this.centerH()
-      if(cb) cb()
-    }
-    return cb
+  onScreenResize() {
+    if(this.centeredV) this.centerV()
+    if(this.centeredH) this.centerH()
   }
 
   onChildResize() {}
 
   onResetEvent() {
-    me.event.subscribe(me.event.WINDOW_ONRESIZE, this._onScreenResize)
+    me.event.subscribe(me.event.WINDOW_ONRESIZE, this.onScreenResize.bind(this))
   }
 
   onDestroyEvent() {
-    me.event.unsubscribe(me.event.WINDOW_ONRESIZE, this._onScreenResize)
+    me.event.unsubscribe(me.event.WINDOW_ONRESIZE, this.onScreenResize.bind(this))
   }
 
   static renderDebugBox({color, renderer, x = 0, y = 0, width, height} = {}) {

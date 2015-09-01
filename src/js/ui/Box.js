@@ -29,12 +29,8 @@ export default class Box extends Component {
         width: width || innerComponent.width + padding.right + padding.left,
         height: height || innerComponent.height + padding.top + padding.bottom,
       })
-      innerComponent.parent = this
-      this.innerComponent = innerComponent
-    } else {
-      super(options)
-      this.innerComponent = null
-    }
+    } else super(options)
+    this._inner = null
 
     this.padding = padding
     this.radius = radius
@@ -44,27 +40,36 @@ export default class Box extends Component {
     this.setOpacity(opacity)
 
     if(innerComponent) {
-      this.innerComponent.moveTo({x: this.pos.x + padding.top, y: this.pos.y + padding.left})
-      if(width) this.innerComponent.resize({width: width + padding.right + padding.left})
-      if(height) this.innerComponent.resize({height: height + padding.top + padding.bottom})
+      this.innerComponent = innerComponent
+      if(width) innerComponent.resize({width: width + padding.right + padding.left})
+      if(height) innerComponent.resize({height: height + padding.top + padding.bottom})
     }
   }
 
-  moveTo({x, y}) {
+  set innerComponent(component) {
+    if(component) {
+      this._inner = component
+      component.parent = this
+      component.moveTo({x: this.pos.x + this.padding.left, y: this.pos.y + this.padding.top})
+      this.resize(component, false)
+    }
+  }
+
+  moveTo({x, y} = {}) {
     x = x || this.pos.x
     y = y || this.pos.y
     super.moveTo({x, y})
-    if(this.innerComponent)
-      this.innerComponent.moveTo({x: x + this.padding.top, y: y + this.padding.left})
+    if(this._inner)
+      this._inner.moveTo({x: x + this.padding.left, y: y + this.padding.top})
   }
 
-  resize({width, height}, childResize = true) {
-    if(this.innerComponent) {
+  resize({width, height} = {}, childResize = true) {
+    if(this._inner) {
       if(childResize)
-        this.innerComponent.resize({width, height})
+        this._inner.resize({width, height})
       super.resize({
-        width: this.innerComponent.width + this.padding.right + this.padding.left,
-        height: this.innerComponent.height + this.padding.top + this.padding.bottom
+        width: this._inner.width + this.padding.right + this.padding.left,
+        height: this._inner.height + this.padding.top + this.padding.bottom
       })
     } else {
       super.resize({width, height})
@@ -73,16 +78,16 @@ export default class Box extends Component {
 
   update(dt) {
     var updated = super.update(dt)
-    if(this.innerComponent) {
-      updated = this.innerComponent.update(dt) || updated
+    if(this._inner) {
+      updated = this._inner.update(dt) || updated
     }
     return updated
   }
 
   draw(renderer) {
     super.draw.apply(this, arguments)
-    if(this.innerComponent) {
-      this.innerComponent.draw.apply(this.innerComponent, arguments)
+    if(this._inner) {
+      this._inner.draw.apply(this._inner, arguments)
     }
   }
 
@@ -125,18 +130,18 @@ export default class Box extends Component {
   }
 
   onChildResize() {
-    if(this.innerComponent) {
-      this.resize(this.innerComponent, false)
+    if(this._inner) {
+      this.resize(this._inner, false)
     }
   }
 
   onResetEvent() {
     super.onResetEvent()
-    if(this.innerComponent) this.innerComponent.onResetEvent()
+    if(this._inner) this._inner.onResetEvent()
   }
 
   onDestroyEvent() {
     super.onDestroyEvent()
-    if(this.innerComponent) this.innerComponent.onDestroyEvent()
+    if(this._inner) this._inner.onDestroyEvent()
   }
 }

@@ -4,6 +4,101 @@ import UIUtil from './UIUtil.js'
 import Cursor from './Cursor.js'
 import Menubar from './Menubar.js'
 
+export default class Screen extends me.ScreenObject {
+
+  constructor() {
+    super()
+    super.init()
+    this.menubar = new Menubar(this)
+    this.masterComponent = new MasterComponent(this)
+    me.game.world.addChild(this.masterComponent)
+  }
+
+  onResetEvent() {
+    me.levelDirector.loadLevel("mini")
+    this.bindKeys()
+    this.askUserName()
+  }
+
+  onDestroyEvent() {
+    this.unbindKeys()
+  }
+
+  bindKeys() {
+    me.input.bindKey(me.input.KEY.Q, "left")
+    me.input.bindKey(me.input.KEY.D, "right")
+    me.input.bindKey(me.input.KEY.SPACE, "jump", false)
+    me.input.bindKey(me.input.KEY.X, "shoot", true)
+    me.input.bindPointer(me.input.KEY.X)
+  }
+
+  unbindKeys() {
+    me.input.unbindKey(me.input.KEY.Q)
+    me.input.unbindKey(me.input.KEY.D)
+    me.input.unbindKey(me.input.KEY.SPACE)
+    me.input.unbindKey(me.input.KEY.X)
+    me.input.unbindPointer(me.input.KEY.X)
+  }
+
+  open(c) {
+    if(this.masterComponent.isEmpty()) {
+      this.unbindKeys()
+      game.cursor.switchVisor(Cursor.visors.GUI)
+    }
+    this.masterComponent.add(c)
+    c.onResetEvent()
+  }
+
+  close(c) {
+    this.masterComponent.remove(c)
+    if(this.masterComponent.isEmpty()) {
+      this.bindKeys()
+      game.cursor.switchVisor(Cursor.visors.GUN)
+    }
+  }
+
+  askUserName() {
+    var askUserName = this.askUserName.bind(this)
+    this.close(this.menubar)
+    UIUtil.prompt("Enter your username", {cancelable: false, okText: "Start"})
+      .then((username) => {
+        UIUtil.alert("Connecting...", {closable: false})
+        return game.connection.init(username)
+      })
+      .then(
+        () => UIUtil.alert("You are connected"),
+        (err) => alertFromErr(err).then(askUserName)
+      )
+  }
+
+  joinUser() {
+    var joinUser = this.joinUser.bind(this)
+    this.close(this.menubar)
+    UIUtil.prompt("Enter the username of \nthe player you want to join")
+      .then((username) => {
+        UIUtil.alert("Connecting...", {closable: false})
+        return game.connection.connectTo(username)
+      })
+      .then(
+        (c) => UIUtil.alert("You have joined " + c.peer),
+        (err) => {
+          if(err !== "UIUtil: prompt canceled")
+            alertFromErr(err).then(joinUser)
+        }
+      )
+  }
+}
+
+function alertFromErr(err) {
+  var message = "Connection error"
+  if(err.type === "unavailable-id")
+    message = "Username already taken"
+  else if(err.type === "peer-unavailable")
+    message = "User not connected"
+  console.log(err)
+  return UIUtil.alert("Error: " + message)
+}
+
 class MasterComponent extends me.Renderable {
     constructor(screen) {
       super()
@@ -57,87 +152,4 @@ class MasterComponent extends me.Renderable {
     isEmpty() {
       return this.components.length < 1
     }
-}
-
-export default class Screen extends me.ScreenObject {
-
-  constructor() {
-    super()
-    super.init()
-    this.menubar = new Menubar()
-    this.masterComponent = new MasterComponent(this)
-    me.game.world.addChild(this.masterComponent)
-  }
-
-  onResetEvent() {
-    me.levelDirector.loadLevel("mini")
-    this.bindKeys()
-    this.askUserName()
-  }
-
-  onDestroyEvent() {
-    this.unbindKeys()
-  }
-
-  bindKeys() {
-    me.input.bindKey(me.input.KEY.Q, "left")
-    me.input.bindKey(me.input.KEY.D, "right")
-    me.input.bindKey(me.input.KEY.SPACE, "jump", false)
-    me.input.bindKey(me.input.KEY.X, "shoot", true)
-    me.input.bindPointer(me.input.KEY.X)
-  }
-
-  unbindKeys() {
-    me.input.unbindKey(me.input.KEY.Q)
-    me.input.unbindKey(me.input.KEY.D)
-    me.input.unbindKey(me.input.KEY.SPACE)
-    me.input.unbindKey(me.input.KEY.X)
-    me.input.unbindPointer(me.input.KEY.X)
-  }
-
-  open(c) {
-    if(this.masterComponent.isEmpty()) {
-      this.unbindKeys()
-      game.cursor.switchVisor(Cursor.visors.GUI)
-    }
-    this.masterComponent.add(c)
-    c.onResetEvent()
-  }
-
-  close(c) {
-    this.masterComponent.remove(c)
-    if(this.masterComponent.isEmpty()) {
-      this.bindKeys()
-      game.cursor.switchVisor(Cursor.visors.GUN)
-    }
-  }
-
-  askUserName() {
-    var askUserName = UIUtil.prompt("Enter your username", false)
-      .then((username) => {
-        localStorage.setItem("twjs.username", username)
-        return game.connection.init(username)
-      })
-      .then(
-        () => UIUtil.alert("You are connected"),
-        (err) => {
-          console.log(err)
-          UIUtil.alert("Error: try again")
-            .then(askUserName)
-        }
-      )
-  }
-
-  joinUser() {
-    var joinUser = UIUtil.prompt("Enter the username of \nthe player you want to join", true)
-      .then((username) => game.connection.connectTo(username))
-      .then(
-        () => {},
-        (err) => {
-          console.log(err)
-          UIUtil.alert("Error: try again")
-            .then(joinUser)
-        }
-      )
-  }
 }
