@@ -4323,6 +4323,14 @@ module.exports = exports['default'];
 (function (global){
 'use strict';
 
+var _get = require('babel-runtime/helpers/get')['default'];
+
+var _inherits = require('babel-runtime/helpers/inherits')['default'];
+
+var _createClass = require('babel-runtime/helpers/create-class')['default'];
+
+var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
+
 var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
 
 Object.defineProperty(exports, '__esModule', {
@@ -4337,89 +4345,67 @@ var _gameJs = require('../game.js');
 
 var _gameJs2 = _interopRequireDefault(_gameJs);
 
-var Bullet = _melonJS2['default'].Entity.extend({
+var Bullet = (function (_me$Entity) {
+  function Bullet(x, y, angle) {
+    _classCallCheck(this, Bullet);
 
-  init: function init(x, y, direction) {
-    var bullet = _gameJs2['default'].texture.createSpriteFromName('gun_bullet');
-    bullet.angle = direction;
-    bullet.scale(0.6, 0.6);
-    // I don't want to comment that.
-    x = x - Math.floor(bullet.width / 2);
-    y = y - Math.floor(bullet.height / 2);
-    var height = bullet.height;
-    var width = bullet.width;
-
-    this._super(_melonJS2['default'].Entity, 'init', [x, y, { width: width, height: height }]);
-    this.renderable = bullet;
-
-    //this.anchorPoint = new me.Vector2d(0, 0.5)
-
-    // Totally random multiplier. CowboyCoder style.
-    //var initialSpeed = 20
-    // Go check your basic trignometry, bitch.
-    //this.velX = initialSpeed * Math.cos(direction)
-    //this.velY = initialSpeed * Math.sin(direction)
-    // Warning : Use precautionaly melonjs functions, as it is coded by
-    //   TerroristCoders, not aware of basic rules of physics.
-    // #theyAreBenLaden
-    //this.body.setMaxVelocity(1000,1000)
-    //this.body.vel.set(this.velX, this.velY) // yep, not body.setVelocity, because it's a fuckin' absurd function
-
-    // Oh yeah, and set to 0 this stupid accel, because it's used nowhere and just here to bother you.
-    //this.body.accel.set(0, 0)
-    // No friction, as we don't want the bullet to slow down
-    this.body.setFriction(0, 0);
-    // Maybe later, we could do projectiles with various gravities.
-
-    // Fir the moment, I'm lazy.
-    this.body.gravity = 0;
-
-    // And not round projectiles... But really, I'm lazy.
-    //this.flipX(!leftP)
-
-    // Just keepin' in comment this wonderfully absurd peace of code by a TerroristCoder.
-    //this.gravity = (Math.random()-0.5)*1.5
-
-    //this.startX = this.pos.x
-    //this.life = 100
-    //this.inViewport = true
-
-    // Actually setting the bullet's acceleration in X and Y
-    this.body.setVelocity(50, 50);
-
-    this.body.addShape(new _melonJS2['default'].Polygon(0, 0, [new _melonJS2['default'].Vector2d(), new _melonJS2['default'].Vector2d(width, 0), new _melonJS2['default'].Vector2d(width, height), new _melonJS2['default'].Vector2d(0, height)]).rotate(direction).scale(0.6));
-
-    this.body.collisionType = _melonJS2['default'].collision.types.PROJECTILE_OBJECT;
-    this.body.collisionMask = _melonJS2['default'].collision.types.WORLD_SHAPE | _melonJS2['default'].collision.types.ENEMY_OBJECT;
-  },
-
-  update: function update(dt) {
-    //this.body.setVelocity(this.velX, this.velY) // Haha. Don't use that, really. Let it commented.
-
-    //this.body.vel.set(this.velX, this.velY) // Yeah, better idea.
-
-    this.body.vel.x = this.body.accel.x * Math.cos(this.renderable.angle);
-    this.body.vel.y = this.body.accel.y * Math.sin(this.renderable.angle);
-    //this.body.accel.set(0, 0) // DON'T MOVE, BITCH.
-
-    this.body.update(); // pos += vel (should also take in account dt, but really, melonjs doen't care about physics. Just make as it it is normal, please. #IMLazy)
-
-    _melonJS2['default'].collision.check(this);
-
-    this._super(_melonJS2['default'].Entity, 'update', [dt]);
-    return true;
-  },
-
-  onCollision: function onCollision(response, other) {
-    // Destroy bullet if colliding
-    _melonJS2['default'].game.world.removeChild(this);
-    return true;
+    _get(Object.getPrototypeOf(Bullet.prototype), 'constructor', this).call(this);
+    this.init(x, y, angle);
   }
-});
-exports.Bullet = Bullet;
+
+  _inherits(Bullet, _me$Entity);
+
+  _createClass(Bullet, [{
+    key: 'init',
+    value: function init(x, y, angle) {
+      var bullet = _gameJs2['default'].texture.createSpriteFromName('gun_bullet');
+      bullet.angle = angle;
+
+      x = x - Math.floor(bullet.width / 2);
+      y = y - Math.floor(bullet.height / 2);
+      var height = bullet.height;
+      var width = bullet.width;
+
+      _get(Object.getPrototypeOf(Bullet.prototype), 'init', this).call(this, x, y, { width: width, height: height });
+
+      this.renderable = bullet;
+
+      this.body.setFriction(0, 0);
+      this.body.gravity = 0;
+      this.body.setVelocity(50, 50);
+      this.body.addShape(bullet.toPolygon().rotate(angle));
+      this.body.removeShapeAt(0);
+      this.body.collisionType = _melonJS2['default'].collision.types.PROJECTILE_OBJECT;
+      this.body.collisionMask = _melonJS2['default'].collision.types.WORLD_SHAPE | _melonJS2['default'].collision.types.ENEMY_OBJECT;
+    }
+  }, {
+    key: 'update',
+    value: function update(dt) {
+      this.body.vel.x = this.body.accel.x * Math.cos(this.renderable.angle);
+      this.body.vel.y = this.body.accel.y * Math.sin(this.renderable.angle);
+
+      this.body.update();
+      _melonJS2['default'].collision.check(this);
+
+      _get(Object.getPrototypeOf(Bullet.prototype), 'update', this).call(this, dt);
+      return true;
+    }
+  }, {
+    key: 'onCollision',
+    value: function onCollision(response, other) {
+      _melonJS2['default'].game.world.removeChildNow(this);
+      return false;
+    }
+  }]);
+
+  return Bullet;
+})(_melonJS2['default'].Entity);
+
+exports['default'] = Bullet;
+module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":88,"babel-runtime/helpers/interop-require-default":10}],87:[function(require,module,exports){
+},{"../game.js":88,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],87:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -4447,16 +4433,19 @@ var _gameJs2 = _interopRequireDefault(_gameJs);
 
 var _BulletJs = require('./Bullet.js');
 
+var _BulletJs2 = _interopRequireDefault(_BulletJs);
+
 var Body = (function (_me$Renderable) {
   function Body() {
     _classCallCheck(this, Body);
 
     var shadow = _gameJs2['default'].texture.createSpriteFromName('tee_body_shadow');
+    shadow.pos.add(new _melonJS2['default'].Vector2d(0, 4));
     _get(Object.getPrototypeOf(Body.prototype), 'constructor', this).call(this);
     _get(Object.getPrototypeOf(Body.prototype), 'init', this).call(this, 0, 0, shadow.width, shadow.height);
     this.shadow = shadow;
     this.sprite = _gameJs2['default'].texture.createSpriteFromName('tee_body');
-    this.sprite.pos.add(new _melonJS2['default'].Vector2d(3, 2));
+    this.sprite.pos.add(new _melonJS2['default'].Vector2d(2, 6));
   }
 
   _inherits(Body, _me$Renderable);
@@ -4476,31 +4465,71 @@ var Body = (function (_me$Renderable) {
   return Body;
 })(_melonJS2['default'].Renderable);
 
-var Eyes = (function (_me$Renderable2) {
+var Hands = (function () {
+  function Hands(player) {
+    _classCallCheck(this, Hands);
+
+    this.hand = _gameJs2['default'].texture.createSpriteFromName('tee_hand');
+    this.gun = _gameJs2['default'].texture.createSpriteFromName('gun');
+    this.gun.anchorPoint.set(0.0, 0.5);
+    this.gun.pos.set(22, 15);
+    this.player = player;
+  }
+
+  _createClass(Hands, [{
+    key: 'update',
+    value: function update(dt) {
+      var angle = this.player.angleToCursor();
+      if (angle < 1.5 && angle > -1.5) {
+        this.gun.flipY(false);
+        this.gun.angle = angle
+        //this.hand.angle = angle
+        ;
+      } else {
+        this.gun.flipY(true);
+        this.gun.angle = -angle
+        //this.hand.angle = -angle
+        ;
+      }
+    }
+  }, {
+    key: 'shoot',
+    value: function shoot() {
+      var angle = this.player.angleToCursor();
+      var bullet = _melonJS2['default'].pool.pull('bullet', this.player.center.x, this.player.center.y, angle);
+      _melonJS2['default'].game.world.addChild(bullet);
+    }
+  }, {
+    key: 'draw',
+    value: function draw(renderer) {
+      this.gun.draw(renderer);
+    }
+  }]);
+
+  return Hands;
+})();
+
+var Eyes = (function () {
   function Eyes(player) {
     _classCallCheck(this, Eyes);
 
-    _get(Object.getPrototypeOf(Eyes.prototype), 'constructor', this).call(this);
-    _get(Object.getPrototypeOf(Eyes.prototype), 'init', this).call(this, 11, 11, 1, 1);
     this.leftEye = _gameJs2['default'].texture.createSpriteFromName('tee_eye');
+    this.leftEye.scale(0.85, 0.85);
     this.rightEye = _gameJs2['default'].texture.createSpriteFromName('tee_eye');
+    this.rightEye.scale(0.85, 0.85);
     this.player = player;
 
     this.h = Math.cos(Math.atan2(-1, -1));
     this.v = Math.sin(Math.atan2(-1, -1));
   }
 
-  _inherits(Eyes, _me$Renderable2);
-
   _createClass(Eyes, [{
     key: 'update',
     value: function update(dt) {
       var angle = this.player.angleToCursor();
-      this.pos.x = 11 + (Math.cos(angle) - this.h) * 15;
-      this.pos.y = 9 + (Math.sin(angle) - this.v) * 10;
-      this.leftEye.pos.y = this.rightEye.pos.y = this.pos.y;
-      this.leftEye.pos.x = this.pos.x;
-      this.rightEye.pos.x = this.pos.x + this.leftEye.width + 1;
+      this.leftEye.pos.y = this.rightEye.pos.y = 10 + (Math.sin(angle) - this.v) * 6.5;
+      this.leftEye.pos.x = 7 + (Math.cos(angle) - this.h) * 9.5;
+      this.rightEye.pos.x = this.leftEye.pos.x + this.leftEye.width - 1;
     }
   }, {
     key: 'draw',
@@ -4511,42 +4540,86 @@ var Eyes = (function (_me$Renderable2) {
   }]);
 
   return Eyes;
-})(_melonJS2['default'].Renderable);
+})();
 
-var Foot = (function (_me$Renderable3) {
-  function Foot(parentHeight) {
-    var x = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+var Feet = (function () {
+  function Feet(player) {
+    _classCallCheck(this, Feet);
 
-    _classCallCheck(this, Foot);
+    this.leftShadow = _gameJs2['default'].texture.createSpriteFromName('tee_foot_shadow');
+    this.rightShadow = _gameJs2['default'].texture.createSpriteFromName('tee_foot_shadow');
+    this.leftSprite = _gameJs2['default'].texture.createSpriteFromName('tee_foot');
+    this.rightSprite = _gameJs2['default'].texture.createSpriteFromName('tee_foot');
 
-    var shadow = _gameJs2['default'].texture.createSpriteFromName('tee_foot_shadow');
-    _get(Object.getPrototypeOf(Foot.prototype), 'constructor', this).call(this);
-    _get(Object.getPrototypeOf(Foot.prototype), 'init', this).call(this, 5 + x, parentHeight - shadow.height - 4, shadow.width, shadow.height);
-    this.shadow = shadow;
-    this.shadow.pos.setV(this.pos);
-    this.shadow.scale(1.4, 1.4);
-    this.sprite = _gameJs2['default'].texture.createSpriteFromName('tee_foot');
-    this.sprite.pos.setV(this.pos);
-    this.sprite.pos.add(new _melonJS2['default'].Vector2d(2, 2));
-    this.sprite.scale(1.5, 1.5);
+    this.player = player;
+    this.shadowToSpritePos = new _melonJS2['default'].Vector2d(3, 2);
+    var shadowHeight = this.leftShadow.height;
+    var x = 0,
+        y = player.height - shadowHeight + 5;
+    this.currentStand = null;
+    this.defaultStand = {
+      right: { pos: new _melonJS2['default'].Vector2d(x + 17, y), angle: 0 },
+      left: { pos: new _melonJS2['default'].Vector2d(x, y), angle: 0 }
+    };
+    this.midAirStand = {
+      right: { pos: new _melonJS2['default'].Vector2d(x + 12, y), angle: -0.6 },
+      left: { pos: new _melonJS2['default'].Vector2d(x + 4, y), angle: -0.6 }
+    };
+    this.walking = false;
+    this.walkingStands = [{
+      right: {},
+      left: {}
+    }];
   }
 
-  _inherits(Foot, _me$Renderable3);
-
-  _createClass(Foot, [{
-    key: 'drawShadow',
-    value: function drawShadow(renderer) {
-      this.shadow.draw(renderer);
+  _createClass(Feet, [{
+    key: 'changeStand',
+    value: function changeStand(stand) {
+      if (this.currentStand !== stand) {
+        this.currentStand = stand;
+        this.leftShadow.pos.setV(stand.left.pos);
+        this.rightShadow.pos.setV(stand.right.pos);
+        this.leftSprite.pos.setV(stand.left.pos);
+        this.leftSprite.pos.add(this.shadowToSpritePos);
+        this.rightSprite.pos.setV(stand.right.pos);
+        this.rightSprite.pos.add(this.shadowToSpritePos);
+        this.leftShadow.angle = this.leftSprite.angle = stand.left.angle;
+        this.rightShadow.angle = this.rightSprite.angle = stand.right.angle;
+      }
     }
   }, {
-    key: 'draw',
-    value: function draw(renderer) {
-      this.sprite.draw(renderer);
+    key: 'update',
+    value: function update(dt) {
+      if (this.player.body.falling || this.player.body.jumping) {
+        this.changeStand(this.midAirStand);
+      } else {
+        this.changeStand(this.defaultStand);
+      }
+    }
+  }, {
+    key: 'drawLeftShadow',
+    value: function drawLeftShadow(renderer) {
+      this.leftShadow.draw(renderer);
+    }
+  }, {
+    key: 'drawRightShadow',
+    value: function drawRightShadow(renderer) {
+      this.rightShadow.draw(renderer);
+    }
+  }, {
+    key: 'drawLeft',
+    value: function drawLeft(renderer) {
+      this.leftSprite.draw(renderer);
+    }
+  }, {
+    key: 'drawRight',
+    value: function drawRight(renderer) {
+      this.rightSprite.draw(renderer);
     }
   }]);
 
-  return Foot;
-})(_melonJS2['default'].Renderable);
+  return Feet;
+})();
 
 var Player = (function (_me$Entity) {
   function Player(x, y, settings) {
@@ -4554,26 +4627,26 @@ var Player = (function (_me$Entity) {
 
     _classCallCheck(this, Player);
 
+    settings.width = 44;
+    settings.height = 44;
     _get(Object.getPrototypeOf(Player.prototype), 'constructor', this).call(this);
     _get(Object.getPrototypeOf(Player.prototype), 'init', this).call(this, x, y, settings);
-    this.spritewidth = 33;
-    this.spriteheight = 33;
 
-    // set the default horizontal & vertical speed (accel vector)
-    this.body.setVelocity(10, 18.5);
-    this.body.gravity = 0.58;
-    // Customize collision size and type
-    var hitBoxCorrection = 8;
-    this.body.setShape(hitBoxCorrection, hitBoxCorrection, this.width - hitBoxCorrection, this.height - hitBoxCorrection);
+    // Horizontal & vertical speed and gravity
+    this.body.setVelocity(8, 10.7);
+    this.body.gravity = 0.35;
+
+    // Hitbox definition and collision type
+    this.body.addShape(new _melonJS2['default'].Rect(0, 0, 32, 32));
+    this.body.removeShapeAt(0);
     this.body.collisionType = _melonJS2['default'].collision.types.PLAYER_OBJECT;
 
+    // Body parts
     this.renderable = new Body();
+    this.hands = new Hands(this);
     this.eyes = new Eyes(this);
-    this.leftFoot = new Foot(this.height);
-    this.rightFoot = new Foot(this.height, 25);
+    this.feet = new Feet(this);
 
-    // set the display to follow o  ur position on both axis
-    //me.debug.renderHitBox = true
     this.alwaysUpdate = true;
 
     this.getCenter = function () {
@@ -4582,7 +4655,7 @@ var Player = (function (_me$Entity) {
     this.center = this.getCenter();
 
     _melonJS2['default'].game.viewport.follow(this.center, _melonJS2['default'].game.viewport.AXIS.BOTH);
-    _melonJS2['default'].game.viewport.setDeadzone(0, 0);
+    _melonJS2['default'].game.viewport.setDeadzone(1, 1);
 
     this.life = 10;
     this.shield = 10;
@@ -4590,7 +4663,7 @@ var Player = (function (_me$Entity) {
     this.multipleJump = 1;
 
     // Register a pool with class Bullet to quickly instantiate bullets in update -> shoot
-    _melonJS2['default'].pool.register('bullet', _BulletJs.Bullet, true);
+    _melonJS2['default'].pool.register('bullet', _BulletJs2['default'], true);
 
     window.player = this;
   }
@@ -4600,12 +4673,11 @@ var Player = (function (_me$Entity) {
   _createClass(Player, [{
     key: 'angleToCursor',
     value: function angleToCursor() {
-      return this.angleToPoint(_gameJs2['default'].cursor.pos);
+      return this.angleToPoint(_melonJS2['default'].game.viewport.localToWorld(_gameJs2['default'].cursor.pos.x, _gameJs2['default'].cursor.pos.y));
     }
   }, {
     key: 'update',
     value: function update(dt) {
-      this.eyes.update(dt);
       //socket.emit("action", )
 
       if (_melonJS2['default'].input.isKeyPressed('left')) {
@@ -4635,11 +4707,12 @@ var Player = (function (_me$Entity) {
       this.body.update(dt);
       _melonJS2['default'].collision.check(this);
       this.center.setV(this.getCenter());
+      this.hands.update(dt);
+      this.eyes.update(dt);
+      this.feet.update(dt);
 
       if (_melonJS2['default'].input.isKeyPressed('shoot')) {
-        var direction = this.angleToCursor();
-        var bullet = _melonJS2['default'].pool.pull('bullet', this.center.x, this.center.y, direction);
-        _melonJS2['default'].game.world.addChild(bullet);
+        this.hands.shoot();
       }
 
       if (this.body.vel.x != 0 || this.body.vel.y != 0) {
@@ -4658,26 +4731,27 @@ var Player = (function (_me$Entity) {
   }, {
     key: 'draw',
     value: function draw(renderer) {
-      // draw the sprite if defined
-      if (this.renderable) {
-        // translate the renderable position (relative to the entity)
-        // and keeps it in the entity defined bounds
-        var x = ~ ~(0.5 + this.pos.x + this.body.pos.x + this.anchorPoint.x * (this.body.width - this.renderable.width));
-        var y = ~ ~(0.5 + this.pos.y + this.body.pos.y + this.anchorPoint.y * (this.body.height - this.renderable.height));
+      var x = ~ ~(0.5 + this.pos.x + this.body.pos.x + this.anchorPoint.x * (this.body.width - this.renderable.width));
+      var y = ~ ~(0.5 + this.pos.y + this.body.pos.y - 8 + this.anchorPoint.y * (this.body.height - this.renderable.height));
 
-        renderer.save();
-        renderer.translate(x, y);
-        //Shadows sprite
-        this.leftFoot.drawShadow(renderer);
-        this.renderable.drawShadow(renderer);
-        this.rightFoot.drawShadow(renderer);
-        //Front sprite
-        this.leftFoot.draw(renderer);
-        this.renderable.draw(renderer);
-        this.eyes.draw(renderer);
-        this.rightFoot.draw(renderer);
-        renderer.restore();
-      }
+      renderer.save();
+      renderer.translate(x, y);
+
+      // Hands
+      this.hands.draw(renderer);
+
+      //Body parts shadows
+      this.feet.drawLeftShadow(renderer);
+      this.renderable.drawShadow(renderer);
+      this.feet.drawRightShadow(renderer);
+
+      //Body part
+      this.feet.drawLeft(renderer);
+      this.renderable.draw(renderer);
+      this.eyes.draw(renderer);
+      this.feet.drawRight(renderer);
+
+      renderer.restore();
     }
   }]);
 
@@ -4686,6 +4760,7 @@ var Player = (function (_me$Entity) {
 
 exports['default'] = Player;
 module.exports = exports['default'];
+//this.hand.draw(renderer)
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../game.js":88,"./Bullet.js":86,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],88:[function(require,module,exports){
@@ -4716,14 +4791,15 @@ var _uiScreenJs2 = _interopRequireDefault(_uiScreenJs);
 
 var game = {
 
-  width: 1152,
-  height: 720,
+  uiScale: 1.2,
+  width: 1152 * 1.2,
+  height: 720 * 1.2,
 
   connection: require('./connection.js'),
   resources: require('./resources.js'),
 
-  titleFont: new _melonJS2['default'].Font('dejavu_sansbook', 22, '#FFFFFF'),
-  font: new _melonJS2['default'].Font('dejavu_sansbook', 16, '#FFFFFF'),
+  titleFont: null,
+  font: null,
   uiTexture: null,
   texture: null,
 
@@ -4748,6 +4824,7 @@ var game = {
     game.debug = false;
     if (document.location.hash === '#debug') {
       game.debug = true;
+      _melonJS2['default'].debug.renderHitBox = true;
       _melonJS2['default'].plugin.register.defer(game, _melonJS2['default'].debug.Panel, 'debug');
     }
   },
@@ -4756,16 +4833,23 @@ var game = {
     game.texture = new _melonJS2['default'].video.renderer.Texture(_melonJS2['default'].loader.getJSON('game'), _melonJS2['default'].loader.getImage('game'));
     game.uiTexture = new _melonJS2['default'].video.renderer.Texture(_melonJS2['default'].loader.getJSON('ui'), _melonJS2['default'].loader.getImage('ui'));
 
-    function applyFontStyle(font) {
+    function initFont(size) {
+      var font = new _melonJS2['default'].Font('dejavu_sansbook', size * game.uiScale, '#FFFFFF');
       font.strokeStyle.parseCSS('rgba(0, 0, 0, 0.60)');
-      font.lineWidth = 5;
+      font.lineWidth = 5 * game.uiScale;
       font.textAlign = 'center';
       font.textBaseline = 'hanging';
+      return font;
     }
-    applyFontStyle(game.font);
-    applyFontStyle(game.titleFont);
+    game.font = initFont(16);
+    game.titleFont = initFont(22);
 
     // Creates the game cursor which will follow the computer cursor (mouse)
+    var canvas = _melonJS2['default'].video.renderer.getCanvas();
+    canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
+    if (canvas.requestPointerLock) {
+      canvas.requestPointerLock();
+    }
     game.cursor = new _uiCursorJs2['default']();
     _melonJS2['default'].game.world.addChild(game.cursor);
 
@@ -4792,7 +4876,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = [
 // mini map
-{ name: "mini", type: "tmx", src: "data/map/mini.tmx" }, { name: "grass_main", type: "image", src: "data/mapres/grass_main.png" }, { name: "sun", type: "image", src: "data/mapres/sun.png" }, { name: "mountains", type: "image", src: "data/mapres/mountains.png" }, { name: "bg_cloud3", type: "image", src: "data/mapres/bg_cloud3.png" },
+{ name: "mini", type: "tmx", src: "data/map/mini.tmx" }, { name: "grass_main", type: "image", src: "data/mapres/grass_main.png" },
+//    {name: "sun",			type: "image",	src: "data/mapres/sun.png"},
+//    {name: "mountains",		type: "image",	src: "data/mapres/mountains.png"},
+//    {name: "bg_cloud3",		type:"image",	src: "data/mapres/bg_cloud3.png"},
 
 // Main sprite
 { name: "game", type: "json", src: "data/game/game.json" }, { name: "game", type: "image", src: "data/game/game.png" },
@@ -4848,7 +4935,7 @@ var Box = (function (_Component) {
     var height = options.height;
     var padding = options.padding;
     var _options$radius = options.radius;
-    var radius = _options$radius === undefined ? 20 : _options$radius;
+    var radius = _options$radius === undefined ? 20 * _gameJs2['default'].uiScale : _options$radius;
     var _options$color = options.color;
     var color = _options$color === undefined ? 'black' : _options$color;
     var _options$opacity = options.opacity;
@@ -4857,7 +4944,7 @@ var Box = (function (_Component) {
     var overOpacity = _options$overOpacity === undefined ? opacity : _options$overOpacity;
     var onClick = options.onClick;
 
-    padding = _ComponentJs2['default'].parsePadding(padding, 10);
+    padding = _ComponentJs2['default'].parsePadding(padding, 10 * _gameJs2['default'].uiScale);
 
     if (typeof radius === 'number') radius = { topLeft: radius, topRight: radius, bottomLeft: radius, bottomRight: radius };
 
@@ -5064,11 +5151,11 @@ var Button = (function (_Box) {
     var overOpacity = _ref$overOpacity === undefined ? 0.75 : _ref$overOpacity;
     var onClick = _ref.onClick;
     var _ref$radius = _ref.radius;
-    var radius = _ref$radius === undefined ? 5 : _ref$radius;
+    var radius = _ref$radius === undefined ? 5 * _gameJs2['default'].uiScale : _ref$radius;
     var _ref$padding = _ref.padding;
-    var padding = _ref$padding === undefined ? { top: 2, bottom: 2, right: 5, left: 5 } : _ref$padding;
+    var padding = _ref$padding === undefined ? { top: 2 * _gameJs2['default'].uiScale, bottom: 2 * _gameJs2['default'].uiScale, right: 5 * _gameJs2['default'].uiScale, left: 5 * _gameJs2['default'].uiScale } : _ref$padding;
 
-    var textCmp = new _TextJs2['default']({ text: text, width: width, font: font, padding: { top: -2 } });
+    var textCmp = new _TextJs2['default']({ text: text, width: width, font: font, padding: { top: -2 * _gameJs2['default'].uiScale } });
     _get(Object.getPrototypeOf(Button.prototype), 'constructor', this).call(this, textCmp, { color: color, overOpacity: overOpacity, onClick: onClick, radius: radius, padding: padding });
     this._text = textCmp;
   }
@@ -5366,14 +5453,14 @@ var Cursor = (function (_me$Renderable) {
     this.switchVisor(Cursor.visors.GUN);
 
     // update worldPos at each MOUSEMOVE event
-    this.screenPos = new _melonJS2['default'].Vector2d(x, y);
     _melonJS2['default'].event.subscribe(_melonJS2['default'].event.MOUSEMOVE, function (e) {
-      _this.screenPos.set(e.gameScreenX, e.gameScreenY);
+      _this.pos.set(e.gameScreenX, e.gameScreenY);
     });
 
     this.z = Infinity;
     this.isPersistent = true;
     this.alwaysUpdate = true;
+    this.floating = true;
   }
 
   _inherits(Cursor, _me$Renderable);
@@ -5383,26 +5470,17 @@ var Cursor = (function (_me$Renderable) {
     value: function switchVisor(visor) {
       this.visor = visor;
       this.sprite = _gameJs2['default'].uiTexture.createSpriteFromName(this.visor);
-    }
-  }, {
-    key: 'update',
-    value: function update() {
-      this.inViewport = true;
-      return true;
+      this.sprite.pos = this.pos;
     }
   }, {
     key: 'draw',
     value: function draw(renderer) {
-      var worldPos = _melonJS2['default'].game.viewport.localToWorld(this.screenPos.x, this.screenPos.y);
-      this.pos.set(worldPos.x, worldPos.y);
+      renderer.save();
       if (this.visor !== Cursor.visors.GUI) {
-        this.sprite.pos.x = this.pos.x - Math.floor(this.sprite.width / 2);
-        this.sprite.pos.y = this.pos.y - Math.floor(this.sprite.height / 2);
-      } else {
-        this.sprite.pos.x = this.pos.x;
-        this.sprite.pos.y = this.pos.y;
+        renderer.translate(-Math.floor(this.sprite.width / 2), -Math.floor(this.sprite.height / 2));
       }
-      return this.sprite.draw(renderer);
+      this.sprite.draw(renderer);
+      renderer.restore();
     }
   }]);
 
@@ -5696,10 +5774,10 @@ var Menubar = (function (_Box) {
 
     _classCallCheck(this, Menubar);
 
-    var margin = 15,
-        padding = 15,
-        radius = 10;
-    _get(Object.getPrototypeOf(Menubar.prototype), 'constructor', this).call(this, { y: margin, y: margin, padding: padding, radius: radius });
+    var margin = 15 * _gameJs2['default'].uiScale,
+        padding = 15 * _gameJs2['default'].uiScale,
+        radius = 10 * _gameJs2['default'].uiScale;
+    _get(Object.getPrototypeOf(Menubar.prototype), 'constructor', this).call(this, { x: margin, y: margin, padding: padding, radius: radius });
     var joinButton = new _ButtonJs2['default']({ text: 'Join User' });
     joinButton.onClick = screen.joinUser.bind(screen);
     this.innerComponent = new _PanelJs2['default']([joinButton], { layout: _PanelJs2['default'].HORIZONTAL });
@@ -5755,6 +5833,10 @@ var _melonJS = (typeof window !== "undefined" ? window['me'] : typeof global !==
 
 var _melonJS2 = _interopRequireDefault(_melonJS);
 
+var _gameJs = require('../game.js');
+
+var _gameJs2 = _interopRequireDefault(_gameJs);
+
 var _ComponentJs = require('./Component.js');
 
 var _ComponentJs2 = _interopRequireDefault(_ComponentJs);
@@ -5801,7 +5883,7 @@ var Panel = (function (_Component) {
     var _ref$fill = _ref.fill;
     var fill = _ref$fill === undefined ? Panel.FIT : _ref$fill;
     var _ref$spacing = _ref.spacing;
-    var spacing = _ref$spacing === undefined ? 20 : _ref$spacing;
+    var spacing = _ref$spacing === undefined ? 20 * _gameJs2['default'].uiScale : _ref$spacing;
     var _ref$layout = _ref.layout;
     var layout = _ref$layout === undefined ? Panel.VERTICAL : _ref$layout;
     var _ref$start = _ref.start;
@@ -5967,7 +6049,7 @@ Panel.GROW = 5;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Component.js":92,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],97:[function(require,module,exports){
+},{"../game.js":88,"./Component.js":92,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],97:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -6023,7 +6105,6 @@ var Screen = (function (_me$ScreenObject) {
     value: function onResetEvent() {
       _melonJS2['default'].levelDirector.loadLevel('mini');
       this.bindKeys();
-      this.askUserName();
     }
   }, {
     key: 'onDestroyEvent',
@@ -6184,6 +6265,7 @@ var MasterComponent = (function (_me$Renderable) {
 })(_melonJS2['default'].Renderable);
 
 module.exports = exports['default'];
+//this.askUserName()
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../game.js":88,"./Cursor.js":93,"./Menubar.js":95,"./UIUtil.js":99,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],98:[function(require,module,exports){
@@ -6263,14 +6345,14 @@ var Text = (function (_Component) {
     var centered = _ref$centered === undefined ? true : _ref$centered;
     var text = _ref.text;
     var _ref$lineSpacing = _ref.lineSpacing;
-    var lineSpacing = _ref$lineSpacing === undefined ? -2 : _ref$lineSpacing;
+    var lineSpacing = _ref$lineSpacing === undefined ? -2 * _gameJs2['default'].uiScale : _ref$lineSpacing;
     var _ref$fitTextH = _ref.fitTextH;
     var fitTextH = _ref$fitTextH === undefined ? !width : _ref$fitTextH;
     var _ref$fitTextV = _ref.fitTextV;
     var fitTextV = _ref$fitTextV === undefined ? !height : _ref$fitTextV;
     var padding = _ref.padding;
 
-    padding = _ComponentJs2['default'].parsePadding(padding, 2);
+    padding = _ComponentJs2['default'].parsePadding(padding, 2 * _gameJs2['default'].uiScale);
     var lines = formatText(text || '').split('\n');
 
     var _computedTextSize = computedTextSize({ lines: lines, padding: padding, lineSpacing: lineSpacing, renderer: _melonJS2['default'].video.renderer, font: font });
@@ -6333,7 +6415,7 @@ var Text = (function (_Component) {
 
       this.renderer.save();
       // HACK: Some very scientific calculation here
-      var padding = this.padding.top + 5;
+      var padding = this.padding.top + 5 * _gameJs2['default'].uiScale;
       this.renderer.translate(0, padding);
       this.lines.map(function (line) {
         if (_gameJs2['default'].debug) {
@@ -6443,16 +6525,16 @@ var Prompt = new _utilLazyObjJs2['default']({
     return new _InputTextJs2['default']();
   },
   okButton: function okButton() {
-    return new _ButtonJs2['default']({ text: 'Ok', width: 100 });
+    return new _ButtonJs2['default']({ text: 'Ok', width: 100 * _gameJs2['default'].uiScale });
   },
   cancelButton: function cancelButton() {
-    return new _ButtonJs2['default']({ text: 'Cancel', width: 100 });
+    return new _ButtonJs2['default']({ text: 'Cancel', width: 100 * _gameJs2['default'].uiScale });
   },
   bottomPanel: function bottomPanel() {
     return new _PanelJs2['default']([Prompt.okButton], { layout: _PanelJs2['default'].HORIZONTAL });
   },
   box: function box() {
-    return new _BoxJs2['default'](new _PanelJs2['default']([Prompt.titleText, new _BoxJs2['default'](Prompt.inputText, { color: 'white', padding: 7, radius: 10 }), Prompt.bottomPanel]));
+    return new _BoxJs2['default'](new _PanelJs2['default']([Prompt.titleText, new _BoxJs2['default'](Prompt.inputText, { color: 'white', padding: 7 * _gameJs2['default'].uiScale, radius: 10 * _gameJs2['default'].uiScale }), Prompt.bottomPanel]));
   }
 });
 
@@ -6462,7 +6544,7 @@ var Alert = new _utilLazyObjJs2['default']({
     return new _TextJs2['default']({ text: '' });
   },
   okButton: function okButton() {
-    return new _ButtonJs2['default']({ text: 'Ok', width: 100 });
+    return new _ButtonJs2['default']({ text: 'Ok', width: 100 * _gameJs2['default'].uiScale });
   },
   panel: function panel() {
     return new _PanelJs2['default']([Alert.titleText, Alert.okButton]);
