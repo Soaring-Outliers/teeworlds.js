@@ -4469,11 +4469,11 @@ var Hands = (function () {
   function Hands(player) {
     _classCallCheck(this, Hands);
 
+    this.player = player;
     this.hand = _gameJs2['default'].texture.createSpriteFromName('tee_hand');
     this.gun = _gameJs2['default'].texture.createSpriteFromName('gun');
     this.gun.anchorPoint.set(0.0, 0.5);
-    this.gun.pos.set(22, 15);
-    this.player = player;
+    this.gun.pos.set(this.player.width / 2, 15);
   }
 
   _createClass(Hands, [{
@@ -4633,8 +4633,9 @@ var Player = (function (_me$Entity) {
     _get(Object.getPrototypeOf(Player.prototype), 'init', this).call(this, x, y, settings);
 
     // Horizontal & vertical speed and gravity
-    this.body.setVelocity(8, 10.7);
-    this.body.gravity = 0.35;
+    this.body.setVelocity(9, 12.2);
+    this.body.midAirVelX = 2;
+    this.body.gravity = 0.4;
 
     // Hitbox definition and collision type
     this.body.addShape(new _melonJS2['default'].Rect(0, 0, 32, 32));
@@ -4661,6 +4662,7 @@ var Player = (function (_me$Entity) {
     this.shield = 10;
 
     this.multipleJump = 1;
+    this.wasWalking = false;
 
     // Register a pool with class Bullet to quickly instantiate bullets in update -> shoot
     _melonJS2['default'].pool.register('bullet', _BulletJs2['default'], true);
@@ -4680,27 +4682,41 @@ var Player = (function (_me$Entity) {
     value: function update(dt) {
       //socket.emit("action", )
 
-      if (_melonJS2['default'].input.isKeyPressed('left')) {
-        this.body.vel.x -= this.body.accel.x * _melonJS2['default'].timer.tick;
-      } else if (_melonJS2['default'].input.isKeyPressed('right')) {
-        this.body.vel.x += this.body.accel.x * _melonJS2['default'].timer.tick;
-      } else {
-        this.body.vel.x += -this.body.vel.x * 0.5;
-      }
-
       if (_melonJS2['default'].input.isKeyPressed('jump')) {
         this.body.jumping = true;
 
         if (this.multipleJump <= 2) {
-          // easy 'math' for double jump
+          if (this.multipleJump == 2) {
+            this.body.maxVel.y = 11;
+          } else {
+            this.body.maxVel.y = 12.2;
+          }
           this.body.vel.y -= this.body.maxVel.y * this.multipleJump++ * _melonJS2['default'].timer.tick;
         }
       } else if (!this.body.falling && !this.body.jumping) {
-        // reset the multipleJump flag if on the ground
         this.multipleJump = 1;
       } else if (this.body.falling && this.multipleJump < 2) {
-        // reset the multipleJump flag if falling
         this.multipleJump = 2;
+      }
+
+      var left = _melonJS2['default'].input.isKeyPressed('left');
+      var right = _melonJS2['default'].input.isKeyPressed('right');
+      if (left || right) {
+        if (!this.wasWalking && (this.body.falling || this.body.jumping)) {
+          this.body.maxVel.x = 5.5;
+        }
+
+        //console.log("accel: "+this.body.accel.x+", vel: "+this.body.vel.x + ", maxVel: "+this.body.maxVel.x)
+        if (left) {
+          this.body.vel.x -= this.body.accel.x * _melonJS2['default'].timer.tick;
+        } else {
+          this.body.vel.x += this.body.accel.x * _melonJS2['default'].timer.tick;
+        }
+        this.wasWalking = true;
+      } else {
+        this.body.vel.x += -this.body.vel.x * 0.9;
+        this.body.maxVel.x = 9;
+        this.wasWalking = false;
       }
 
       // check & update player movement
@@ -6117,7 +6133,7 @@ var Screen = (function (_me$ScreenObject) {
     value: function bindKeys() {
       _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.Q, 'left');
       _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.D, 'right');
-      _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.SPACE, 'jump', false);
+      _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.SPACE, 'jump', true);
       _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.X, 'shoot', true);
       _melonJS2['default'].input.bindPointer(_melonJS2['default'].input.KEY.X);
     }
