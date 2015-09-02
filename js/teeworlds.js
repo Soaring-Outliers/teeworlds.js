@@ -6105,6 +6105,7 @@ var Screen = (function (_me$ScreenObject) {
     value: function onResetEvent() {
       _melonJS2['default'].levelDirector.loadLevel('mini');
       this.bindKeys();
+      this.askUserName();
     }
   }, {
     key: 'onDestroyEvent',
@@ -6265,7 +6266,6 @@ var MasterComponent = (function (_me$Renderable) {
 })(_melonJS2['default'].Renderable);
 
 module.exports = exports['default'];
-//this.askUserName()
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../game.js":88,"./Cursor.js":93,"./Menubar.js":95,"./UIUtil.js":99,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],98:[function(require,module,exports){
