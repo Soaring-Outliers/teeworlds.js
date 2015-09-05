@@ -1,18 +1,19 @@
 import me from 'melonJS'
+import ConnectionControler from './connection/ConnectionControler.js'
 import Player from './entity/Player.js'
 import Cursor from './ui/Cursor.js'
 import Screen from './ui/Screen.js'
 
 var game = {
 
-  width: 1152,
-  height: 720,
+  uiScale: 1.1,
+  width: 1152 * 1.2,
+  height: 720 * 1.2,
 
-  connection: require("./connection.js"),
   resources: require("./resources.js"),
 
-  titleFont: new me.Font("dejavu_sansbook", 22, "#FFFFFF"),
-  font: new me.Font("dejavu_sansbook", 16, "#FFFFFF"),
+  titleFont: null,
+  font: null,
   uiTexture: null,
   texture: null,
 
@@ -41,6 +42,7 @@ var game = {
     game.debug = false
     if (document.location.hash === "#debug") {
       game.debug = true
+      me.debug.renderHitBox = true
       me.plugin.register.defer(game, me.debug.Panel, "debug")
     }
   },
@@ -55,24 +57,39 @@ var game = {
       me.loader.getImage("ui")
     )
 
-    function applyFontStyle(font) {
+    function initFont(size) {
+      var font = new me.Font("dejavu_sansbook", size * game.uiScale, "#FFFFFF")
       font.strokeStyle.parseCSS("rgba(0, 0, 0, 0.60)")
-      font.lineWidth = 5
+      font.lineWidth = 6 * game.uiScale
       font.textAlign = "center"
       font.textBaseline = "hanging"
+      return font
     }
-    applyFontStyle(game.font)
-    applyFontStyle(game.titleFont)
+    game.font = initFont(17)
+    game.titleFont = initFont(22)
 
     // Creates the game cursor which will follow the computer cursor (mouse)
+    var canvas = me.video.renderer.getCanvas()
+    canvas.requestPointerLock = canvas.requestPointerLock ||
+                            canvas.mozRequestPointerLock ||
+                            canvas.webkitRequestPointerLock
+    if(canvas.requestPointerLock) {
+      canvas.requestPointerLock()
+    }
     game.cursor = new Cursor()
     me.game.world.addChild(game.cursor)
 
     me.pool.register("player1", Player)
 
+    // Init connection controller
+    game.connectionControler = new ConnectionControler()
+
+    // Init screen
     game.screen = new Screen()
     me.state.set(me.state.PLAY, game.screen)
     me.state.change(me.state.PLAY)
+
+    game.connectionControler.init()
   }
 }
 

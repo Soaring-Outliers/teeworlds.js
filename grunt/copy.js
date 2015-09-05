@@ -3,7 +3,7 @@ module.exports = {
         files: [
             {
                 expand: true,
-                src: ['data/**', '!data/**/originals/**', '!data/**/LICENSE.txt'],
+                src: ['data/**', '!data/originals/**', '!data/**/extracted/**', '!data/**/final/**', '!data/**/LICENSE.txt'],
                 dest: 'dist/'
             }
         ]

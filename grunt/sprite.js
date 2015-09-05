@@ -40,25 +40,24 @@ function melonJSTemplate(params) {
 
 module.exports = {
   ui: {
-    src: 'data/ui/originals/*.png',
+    src: 'data/ui/final/*.png',
     dest: 'data/ui/ui.png',
     destCss: 'data/ui/ui.json',
-    padding: 2,
+    padding: 1,
     cssTemplate: melonJSTemplate
   },
   game: {
-    src: [
-      'data/game/originals/gun.png',
-      'data/game/originals/gun_bullet.png',
-      'data/game/originals/tee/tee_body.png',
-      'data/game/originals/tee/tee_body_shadow.png',
-      'data/game/originals/tee/tee_foot.png',
-      'data/game/originals/tee/tee_foot_shadow.png',
-      'data/game/originals/tee/tee_eye.png'
-    ],
+    src: 'data/game/final/*.png',
     dest: 'data/game/game.png',
     destCss: 'data/game/game.json',
-    padding: 2,
+    padding: 1,
     cssTemplate: melonJSTemplate
-  }
+  }/*,
+  grass_main: {
+    src: 'data/mapres/extracted/grass_main/*.png',
+    dest: 'data/mapres/grass_main2.png',
+    destCss: 'data/mapres/grass_main2.json',
+    padding: 1,
+    cssTemplate: melonJSTemplate
+  },*/
 };

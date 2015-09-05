@@ -9,37 +9,29 @@ export default class Cursor extends me.Renderable {
     this.switchVisor(Cursor.visors.GUN)
 
     // update worldPos at each MOUSEMOVE event
-    this.screenPos = new me.Vector2d(x, y)
     me.event.subscribe(me.event.MOUSEMOVE, (e) => {
-      this.screenPos.set(e.gameScreenX, e.gameScreenY)
+      this.pos.set(e.gameScreenX, e.gameScreenY)
     })
 
     this.z = Infinity
     this.isPersistent = true
     this.alwaysUpdate = true
+    this.floating = true
   }
 
   switchVisor(visor) {
     this.visor = visor
     this.sprite = game.uiTexture.createSpriteFromName(this.visor)
-  }
-
-  update() {
-    this.inViewport = true
-    return true
+    this.sprite.pos = this.pos
   }
 
   draw(renderer) {
-    var worldPos = me.game.viewport.localToWorld(this.screenPos.x, this.screenPos.y)
-    this.pos.set(worldPos.x, worldPos.y)
+    renderer.save()
     if(this.visor !== Cursor.visors.GUI) {
-      this.sprite.pos.x = this.pos.x - Math.floor(this.sprite.width / 2)
-      this.sprite.pos.y = this.pos.y - Math.floor(this.sprite.height / 2)
-    } else {
-      this.sprite.pos.x = this.pos.x
-      this.sprite.pos.y = this.pos.y
+      renderer.translate(- Math.floor(this.sprite.width / 2), - Math.floor(this.sprite.height / 2))
     }
-    return this.sprite.draw(renderer)
+    this.sprite.draw(renderer)
+    renderer.restore()
   }
 }
 Cursor.visors = {

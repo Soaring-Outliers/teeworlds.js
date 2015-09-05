@@ -1,4 +1,5 @@
 import me from 'melonJS'
+import game from '../game.js'
 import Component from './Component.js'
 
 function computeLayoutSize(panel) {
@@ -6,16 +7,16 @@ function computeLayoutSize(panel) {
     var width = 0, height = 0
     if (panel.isVertical) {
       panel.components.map(cmp => {
-        height += cmp.height + panel.spacing
+        height += cmp.height + panel.spacing * game.uiScale
         width = Math.max(cmp.width, width)
       })
-      height -= panel.spacing
+      height -= panel.spacing * game.uiScale
     } else {
       panel.components.map(cmp => {
-        width += cmp.width + panel.spacing
+        width += cmp.width + panel.spacing * game.uiScale
         height = Math.max(cmp.height, height)
       })
-      width -= panel.spacing
+      width -= panel.spacing * game.uiScale
     }
     return {width, height}
   }
@@ -84,6 +85,15 @@ export default class Panel extends Component {
         var delta = cmp.width + this.spacing
         posX = posX + (this.isLeading ? delta : -delta)
       })
+    }
+  }
+
+  insert(component, index) {
+    if(component && component instanceof Component) {
+      this.components.splice(index, 0, component)
+      component.parent = this
+      this.resize(computeLayoutSize(this))
+      this.adjustComponentsPos()
     }
   }
 

@@ -23,11 +23,13 @@ export default class Box extends Component {
     if(typeof radius === "number")
       radius = {topLeft: radius, topRight: radius, bottomLeft: radius, bottomRight: radius}
 
+    var horizontalPadding = game.uiScale * (padding.right + padding.left)
+    var verticalPadding = game.uiScale * (padding.top + padding.bottom)
     if(innerComponent) {
       super({
         x, y,
-        width: width || innerComponent.width + padding.right + padding.left,
-        height: height || innerComponent.height + padding.top + padding.bottom,
+        width: width || innerComponent.width + horizontalPadding,
+        height: height || innerComponent.height + verticalPadding,
       })
     } else super(options)
     this._inner = null
@@ -41,16 +43,23 @@ export default class Box extends Component {
 
     if(innerComponent) {
       this.innerComponent = innerComponent
-      if(width) innerComponent.resize({width: width + padding.right + padding.left})
-      if(height) innerComponent.resize({height: height + padding.top + padding.bottom})
+      if(width) innerComponent.resize({width: width - horizontalPadding})
+      if(height) innerComponent.resize({height: height - verticalPadding})
     }
+  }
+
+  get innerComponent() {
+    return this._inner
   }
 
   set innerComponent(component) {
     if(component) {
       this._inner = component
       component.parent = this
-      component.moveTo({x: this.pos.x + this.padding.left, y: this.pos.y + this.padding.top})
+      component.moveTo({
+        x: this.pos.x + this.padding.left * game.uiScale,
+        y: this.pos.y + this.padding.top * game.uiScale
+      })
       this.resize(component, false)
     }
   }
@@ -59,17 +68,22 @@ export default class Box extends Component {
     x = x || this.pos.x
     y = y || this.pos.y
     super.moveTo({x, y})
-    if(this._inner)
-      this._inner.moveTo({x: x + this.padding.left, y: y + this.padding.top})
+    if(this._inner) {
+      this._inner.moveTo({
+        x: x + this.padding.left * game.uiScale,
+        y: y + this.padding.top * game.uiScale
+      })
+    }
   }
 
   resize({width, height} = {}, childResize = true) {
     if(this._inner) {
-      if(childResize)
+      if(childResize) {
         this._inner.resize({width, height})
+      }
       super.resize({
-        width: this._inner.width + this.padding.right + this.padding.left,
-        height: this._inner.height + this.padding.top + this.padding.bottom
+        width: this._inner.width + (this.padding.right + this.padding.left) * game.uiScale,
+        height: this._inner.height + (this.padding.top + this.padding.bottom) * game.uiScale
       })
     } else {
       super.resize({width, height})
@@ -109,10 +123,10 @@ export default class Box extends Component {
     var height = ~~this.height
     var midHeight = height / 2
     var midWidth = width / 2
-    var topLeft = ~~Math.min(this.radius.topLeft, midWidth, midHeight)
-    var topRight = ~~Math.min(this.radius.topRight, midWidth, midHeight)
-    var bottomLeft = ~~Math.min(this.radius.bottomLeft, midWidth, midHeight)
-    var bottomRight = ~~Math.min(this.radius.bottomRight, midWidth, midHeight)
+    var topLeft = ~~(game.uiScale * Math.min(this.radius.topLeft, midWidth, midHeight))
+    var topRight = ~~(game.uiScale * Math.min(this.radius.topRight, midWidth, midHeight))
+    var bottomLeft = ~~(game.uiScale * Math.min(this.radius.bottomLeft, midWidth, midHeight))
+    var bottomRight = ~~(game.uiScale * Math.min(this.radius.bottomRight, midWidth, midHeight))
     ctx.beginPath()
     ctx.moveTo(topLeft, 0)
     ctx.lineTo(width - topRight, 0)

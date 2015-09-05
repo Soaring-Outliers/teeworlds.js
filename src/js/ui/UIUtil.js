@@ -10,10 +10,10 @@ import LazyObj from '../util/LazyObj.js'
 
 // Initialize prompt
 var Prompt = new LazyObj({
-  titleText: () => new Text({text: ""}),
+  titleText: () => new Text(),
   inputText: () => new InputText(),
-  okButton: () => new Button({text: "Ok", width: 100}),
-  cancelButton: () => new Button({text: "Cancel", width: 100}),
+  okButton: () => new Button({text: "Ok", width: 100 * game.uiScale}),
+  cancelButton: () => new Button({text: "Cancel", width: 100 * game.uiScale}),
   bottomPanel: () => new Panel([Prompt.okButton], {layout: Panel.HORIZONTAL}),
   box: () => new Box(new Panel([
       Prompt.titleText,
@@ -24,7 +24,8 @@ var Prompt = new LazyObj({
 
 // Initialize alert
 var Alert = new LazyObj({
-  titleText: () => new Text({text: ""}),
+  titleText: () => new Text(),
+  descriptionText: () => new Text({font: game.font}),
   okButton: () => new Button({text: "Ok", width: 100}),
   panel: () => new Panel([Alert.titleText, Alert.okButton]),
   box: () => new Box(Alert.panel)
@@ -66,13 +67,19 @@ export default class UIUtil {
     })
   }
 
-  static alert(title, {closable = true} = {}) {
+  static alert(title, {description = null, closable = true} = {}) {
     if(alertOpened)
       game.screen.close(Alert.box)
     Alert.titleText.text = title
+    Alert.panel.remove(Alert.descriptionText)
+    if(description) {
+      Alert.panel.insert(Alert.descriptionText, 1)
+      Alert.descriptionText.text = description
+    }
     Alert.panel.remove(Alert.okButton)
-    if(closable)
+    if(closable) {
       Alert.panel.add(Alert.okButton)
+    }
     return new Promise((resolve, reject) => {
       if(closable) {
         Alert.box.onEnterKey =

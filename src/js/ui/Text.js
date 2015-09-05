@@ -8,8 +8,8 @@ function formatText(text) {
 
 function computedTextSize(text) {
   var fontMeasure, textWidth = 1
-  var widthPadding = text.padding.left + text.font.lineWidth * 2 + text.padding.right
-  var heightPadding = text.padding.top + text.font.lineWidth * 2 + text.padding.bottom
+  var widthPadding =  text.font.lineWidth * 2 + (text.padding.right + text.padding.left) * game.uiScale
+  var heightPadding = text.font.lineWidth * 2 + (text.padding.bottom + text.padding.top) * game.uiScale
   text.lines.map(line => {
     fontMeasure = text.font.measureText(text.renderer, line)
     // HACK: Some weird but necessary correction on text width
@@ -18,7 +18,7 @@ function computedTextSize(text) {
   })
   var lineWidth = fontMeasure.height + heightPadding
   var textHeight = text.lines.length * lineWidth
-  textHeight += (text.lines.length - 1) * text.lineSpacing
+  textHeight += (text.lines.length - 1) * (text.lineSpacing * game.uiScale)
   return {textWidth, textHeight, lineWidth}
 }
 
@@ -33,8 +33,7 @@ export default class Text extends Component {
   constructor(options) {
     var {
       x, y, width, height, font = game.titleFont, centered = true,
-      text, lineSpacing = -2, fitTextH = !width, fitTextV = !height,
-      padding
+      text, fitTextH = !width, fitTextV = !height, lineSpacing = -2, padding
     } = options || {}
     padding = Component.parsePadding(padding, 2)
     var lines = formatText(text || "").split("\n")
@@ -96,8 +95,8 @@ export default class Text extends Component {
 
     this.renderer.save()
     // HACK: Some very scientific calculation here
-    var padding = this.padding.top + 5
-    this.renderer.translate(0, padding)
+    var paddingCorrection = (this.padding.top + 5) * game.uiScale
+    this.renderer.translate(0, paddingCorrection)
     this.lines.map(line => {
       if (game.debug) {
         var measure = computedTextSize({
@@ -106,14 +105,14 @@ export default class Text extends Component {
         })
         Component.renderDebugBox({
           color: "blue", renderer: this.renderer,
-          x: posX - measure.textWidth / 2, y: posY - padding,
+          x: posX - measure.textWidth / 2, y: posY - paddingCorrection,
           width: measure.textWidth, height: measure.textHeight
         })
       }
 
       this.font.drawStroke(this.renderer, line, posX, posY)
       this.font.draw(this.renderer, line, posX, posY)
-      posY += this.lineSpacing + this.lineWidth
+      posY += this.lineSpacing * game.uiScale + this.lineWidth
     })
     this.renderer.restore()
   }

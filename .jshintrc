@@ -26,7 +26,7 @@
     "undef"         : true,     // true: Require all non-global variables to be declared (prevents global leaks)
     "unused"        : false,     // true: Require all defined variables be used
     "strict"        : false,     // true: Requires all functions run in ES5 Strict Mode
-    "trailing"      : false,    // true: Prohibit trailing whitespaces
+    "trailing"      : true,    // true: Prohibit trailing whitespaces
     "maxparams"     : false,    // {int} Max number of formal params allowed per function
     "maxdepth"      : false,    // {int} Max depth of nested blocks (within functions)
     "maxstatements" : false,    // {int} Max number statements per function
@@ -39,7 +39,7 @@
     "debug"         : false,     // true: Allow debugger statements e.g. browser breakpoints.
     "eqnull"        : true,      // true: Tolerate use of `== null`
     "es5"           : false,     // true: Allow ES5 syntax (ex: getters and setters)
-    "esnext"        : false,     // true: Allow ES.next (ES6) syntax (ex: `const`)
+    "esnext"        : true,     // true: Allow ES.next (ES6) syntax (ex: `const`)
     "moz"           : false,     // true: Allow Mozilla specific syntax (extends and overrides esnext features)
                                  // (ex: `for each`, multiple try/catch, function expression)
     "evil"          : false,     // true: Tolerate use of `eval` and `new Function()`
@@ -55,7 +55,7 @@
     "notypeof "     : false,     // true: Disable the check on the use of the typeof operator (result vs given string)
     "proto"         : false,     // true: Tolerate using the `__proto__` property
     "scripturl"     : false,     // true: Tolerate script-targeted URLs
-    "smarttabs"     : true,      // true: Tolerate mixed tabs/spaces when used for alignment
+    "smarttabs"     : false,      // true: Tolerate mixed tabs/spaces when used for alignment
     "shadow"        : false,     // true: Allows re-define variables later in code e.g. `var x=1; x=2;`
     "sub"           : true,      // true: Tolerate using `[]` notation when it can still be expressed in dot notation
     "supernew"      : false,     // true: Tolerate `new function () { ... };` and `new Object;`
@@ -84,7 +84,6 @@
 
     // Custom Globals
     "globals"       : {
-        "me": true,
         "console": true,
         "throttle": true,
         "Windows": true,
@@ -96,5 +95,5 @@
         "Howl" : true,
         "Howler" : true,
         "exports" : true // commonJS and friends
-    } 
+    }
 }
