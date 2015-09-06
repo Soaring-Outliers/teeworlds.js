@@ -4268,14 +4268,12 @@ var ConnectionControler = (function () {
     _classCallCheck(this, ConnectionControler);
 
     this.peerConnection = null;
-    this.username = null;
     this.eventSubscribers = new _hashmap.HashMap();
   }
 
   _createClass(ConnectionControler, [{
     key: 'init',
     value: function init() {
-      this.username = localStorage.getItem('twjs.username');
       if (this.username) {
         _uiUIUtilJs2['default'].alert('Connecting as ' + this.username + '...', { closable: false });
         var askUserName = this.askUserName.bind(this);
@@ -4290,14 +4288,20 @@ var ConnectionControler = (function () {
       } else this.askUserName();
     }
   }, {
+    key: 'isConnected',
+    value: function isConnected() {
+      return this.peerConnection == null;
+    }
+  }, {
     key: 'subscribe',
     value: function subscribe(event, cb) {
       if (event === ConnectionControler.CONNECTED) {
         var subs = this.eventSubscribers.get(event);
-        if (!subs) {
-          subs = [cb];
-          this.eventSubscribers.set(event, subs);
-        } else subs.push(cb);
+        if (subs) {
+          subs.push(cb);
+        } else {
+          this.eventSubscribers.set(event, [cb]);
+        }
       }
     }
   }, {
@@ -4311,16 +4315,6 @@ var ConnectionControler = (function () {
       });
     }
   }, {
-    key: 'onJoinSuccess',
-    value: function onJoinSuccess(dataConnection) {
-      _uiUIUtilJs2['default'].alert('You have joined ' + dataConnection.peer);
-    }
-  }, {
-    key: 'isConnected',
-    value: function isConnected() {
-      return this.peerConnection == null;
-    }
-  }, {
     key: 'askUserName',
     value: function askUserName() {
       var self = this;
@@ -4330,12 +4324,16 @@ var ConnectionControler = (function () {
       var okText = 'Start';
       _uiUIUtilJs2['default'].prompt(title, { okText: okText }).then(function (username) {
         _uiUIUtilJs2['default'].alert('Connecting as ' + username + '...', { closable: false });
-        localStorage.setItem('twjs.username', username);
         self.username = username;
         return _PeerConnectionJs2['default'].create(username);
       }).then(onConnectionSucess, function (err) {
         return alertError(err).then(askUserName);
       });
+    }
+  }, {
+    key: 'onJoinSuccess',
+    value: function onJoinSuccess(dataConnection) {
+      _uiUIUtilJs2['default'].alert('You have joined ' + dataConnection.peer);
     }
   }, {
     key: 'joinUser',
@@ -4352,6 +4350,18 @@ var ConnectionControler = (function () {
         }).then(this.onJoinSuccess, function (err) {
           return alertError(err).then(joinUser);
         });
+      }
+    }
+  }, {
+    key: 'username',
+    get: function get() {
+      return me.save['username'];
+    },
+    set: function set(u) {
+      if (this.username) {
+        me.save['username'] = u;
+      } else {
+        me.save.add({ 'username': u });
       }
     }
   }]);
@@ -5125,6 +5135,8 @@ var game = {
     game.screen = new _uiScreenJs2['default']();
     _melonJS2['default'].state.set(_melonJS2['default'].state.PLAY, game.screen);
     _melonJS2['default'].state.change(_melonJS2['default'].state.PLAY);
+
+    game.connectionControler.init();
   }
 };
 
@@ -5133,7 +5145,6 @@ window.game = game;
 
 exports['default'] = game;
 module.exports = exports['default'];
-//game.connectionControler.init()
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./connection/ConnectionControler.js":85,"./entity/player/Player.js":92,"./resources.js":94,"./ui/Cursor.js":98,"./ui/Screen.js":102,"babel-runtime/helpers/interop-require-default":10}],94:[function(require,module,exports){
@@ -6467,6 +6478,17 @@ var Screen = (function (_me$ScreenObject) {
     _get(Object.getPrototypeOf(Screen.prototype), 'init', this).call(this);
     this.uiLayer = new UILayer(this);
     _melonJS2['default'].game.world.addChild(this.uiLayer);
+
+    var toogleFullScreen = function toogleFullScreen() {
+      return !_melonJS2['default'].device.isFullscreen ? _melonJS2['default'].device.requestFullscreen() : _melonJS2['default'].device.exitFullscreen();
+    };
+    _melonJS2['default'].input.bindKey(_melonJS2['default'].input.KEY.F, 'toggleFullscreen');
+    _melonJS2['default'].event.subscribe(_melonJS2['default'].event.KEYDOWN, function (action, keyCode, edge) {
+      if (action === 'toggleFullscreen') {
+        toogleFullScreen();
+        _melonJS2['default'].device.turnOnPointerLock();
+      }
+    });
   }
 
   _inherits(Screen, _me$ScreenObject);
@@ -6474,21 +6496,7 @@ var Screen = (function (_me$ScreenObject) {
   _createClass(Screen, [{
     key: 'onResetEvent',
     value: function onResetEvent() {
-      var _this = this;
-
-      _melonJS2['default'].event.subscribe(_melonJS2['default'].event.LEVEL_LOADED, function () {
-        return _this.bgTileLayer = _melonJS2['default'].game.world.getChildByName('background')[0];
-      });
       _melonJS2['default'].levelDirector.loadLevel('dm1');
-
-      // Subscribe to the viewport change event; fires when the viewport scrolls
-      //me.event.subscribe(me.event.VIEWPORT_ONCHANGE, (pos) => {
-      //  // Copy the viewport position into the tile layer position, then divide by 2...
-      //  if (this.bgTileLayer) {
-      //    var {x, y} = pos.scale(this.bgTileLayer.ratio, this.bgTileLayer.ratio)
-      //    //this.bgTileLayer.updateBoundsPos(x, y)
-      //  }
-      //})
       this.bindKeys();
     }
   }, {
