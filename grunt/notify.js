@@ -16,5 +16,11 @@ module.exports = {
       title: "Data files copy",
       message: "Ressource data files copied"
     }
+  },
+  lib: {
+    options: {
+      title: "External lib concat",
+      message: "External libraries concatenated"
+    }
   }
 }

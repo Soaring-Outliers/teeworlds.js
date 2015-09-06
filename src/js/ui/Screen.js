@@ -30,11 +30,11 @@ class UILayer extends me.Renderable {
       c.onDestroyEvent()
     }
 
-    draw() {
-      this.components.map((c) => c.draw.apply(c, arguments))
+    draw(renderer) {
+      this.components.map((c) => c.draw(renderer))
     }
 
-    update() {
+    update(dt) {
       var activeComponent = this.components.length >= 1 ?
         this.components[this.components.length - 1] :
         undefined
@@ -51,7 +51,7 @@ class UILayer extends me.Renderable {
           activeComponent.onEnterKey()
         }
       }
-      this.components.map((c) => c.update.apply(c, arguments))
+      this.components.map((c) => c.update(dt))
       return true
     }
 
@@ -70,7 +70,19 @@ export default class Screen extends me.ScreenObject {
   }
 
   onResetEvent() {
-    me.levelDirector.loadLevel("mini")
+    me.event.subscribe(me.event.LEVEL_LOADED, () =>
+      this.bgTileLayer = me.game.world.getChildByName("background")[0]
+    )
+    me.levelDirector.loadLevel("dm1")
+
+    // Subscribe to the viewport change event; fires when the viewport scrolls
+    //me.event.subscribe(me.event.VIEWPORT_ONCHANGE, (pos) => {
+    //  // Copy the viewport position into the tile layer position, then divide by 2...
+    //  if (this.bgTileLayer) {
+    //    var {x, y} = pos.scale(this.bgTileLayer.ratio, this.bgTileLayer.ratio)
+    //    //this.bgTileLayer.updateBoundsPos(x, y)
+    //  }
+    //})
     this.bindKeys()
   }
 

@@ -1,14 +1,14 @@
 import me from 'melonJS'
 import ConnectionControler from './connection/ConnectionControler.js'
-import Player from './entity/Player.js'
+import Player from './entity/player/Player.js'
 import Cursor from './ui/Cursor.js'
 import Screen from './ui/Screen.js'
 
 var game = {
 
-  uiScale: 1.1,
-  width: 1152 * 1.2,
-  height: 720 * 1.2,
+  uiScale: 1,
+  width: 1152,
+  height: 720,
 
   resources: require("./resources.js"),
 
@@ -25,7 +25,9 @@ var game = {
         renderer: me.video.CANVAS,
         antiAlias: true,
         scale : 'auto',
-        scaleMethod: "fill-max"
+        scaleMethod: "fill-max",
+        doubleBuffering: false,
+        transparent: true
       }
     )
     if (!ok) {
@@ -39,9 +41,7 @@ var game = {
     me.state.change(me.state.LOADING)
 
     // add "#debug" to the URL to enable the debug Panel
-    game.debug = false
     if (document.location.hash === "#debug") {
-      game.debug = true
       me.debug.renderHitBox = true
       me.plugin.register.defer(game, me.debug.Panel, "debug")
     }
@@ -69,13 +69,6 @@ var game = {
     game.titleFont = initFont(22)
 
     // Creates the game cursor which will follow the computer cursor (mouse)
-    var canvas = me.video.renderer.getCanvas()
-    canvas.requestPointerLock = canvas.requestPointerLock ||
-                            canvas.mozRequestPointerLock ||
-                            canvas.webkitRequestPointerLock
-    if(canvas.requestPointerLock) {
-      canvas.requestPointerLock()
-    }
     game.cursor = new Cursor()
     me.game.world.addChild(game.cursor)
 
@@ -89,7 +82,7 @@ var game = {
     me.state.set(me.state.PLAY, game.screen)
     me.state.change(me.state.PLAY)
 
-    game.connectionControler.init()
+    //game.connectionControler.init()
   }
 }
 

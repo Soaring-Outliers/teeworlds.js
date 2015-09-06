@@ -10,10 +10,10 @@ export default class Component extends me.GUI_Object {
       onEnterKey, onEscKey, centeredH = true, centeredV = true
     } = options || {}
 
-    if (x == undefined && centeredH !== false)
+    if (x === undefined && centeredH !== false)
       x = me.game.viewport.width / 2 - width / 2
     else centeredH = false
-    if (y == undefined && centeredV !== false)
+    if (y === undefined && centeredV !== false)
       y = me.game.viewport.height / 2 - height / 2
     else centeredV = false
 
@@ -43,7 +43,7 @@ export default class Component extends me.GUI_Object {
     } = options || {}
     this.moveTo({y: parentY + (parentHeight / 2 - this.height / 2)})
 
-    this.centeredV = arguments.length == 0
+    this.centeredV = arguments.length === 0
     return this.pos.y
   }
 
@@ -54,7 +54,7 @@ export default class Component extends me.GUI_Object {
     } = options || {}
     this.moveTo({x: parentX + (parentWidth / 2 - this.width / 2)})
 
-    this.centeredH = arguments.length == 0
+    this.centeredH = arguments.length === 0
     return this.pos.x
   }
 
@@ -93,16 +93,10 @@ export default class Component extends me.GUI_Object {
       this.renderer.prepareSurface()
       this.render()
     }
-    super.draw.apply(this, arguments)
+    super.draw(renderer)
   }
 
   render() {
-    if (game.debug) {
-      Component.renderDebugBox({
-        color: "red", renderer: this.renderer,
-        width: this.width, height: this.height
-      })
-    }
     this.renderer.needUpdate = false
   }
 

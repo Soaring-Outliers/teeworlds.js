@@ -143,8 +143,8 @@ export default class Panel extends Component {
   }
 
   draw(renderer) {
-    super.draw.apply(this, arguments)
-    this.components.map(cmp => cmp.draw.apply(cmp, arguments))
+    super.draw(renderer)
+    this.components.map(cmp => cmp.draw(renderer))
   }
 
   update(dt) {

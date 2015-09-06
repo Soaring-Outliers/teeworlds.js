@@ -99,9 +99,9 @@ export default class Box extends Component {
   }
 
   draw(renderer) {
-    super.draw.apply(this, arguments)
+    super.draw(renderer)
     if(this._inner) {
-      this._inner.draw.apply(this._inner, arguments)
+      this._inner.draw(renderer)
     }
   }
 

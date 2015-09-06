@@ -19,6 +19,8 @@ function computedTextSize(text) {
   var lineWidth = fontMeasure.height + heightPadding
   var textHeight = text.lines.length * lineWidth
   textHeight += (text.lines.length - 1) * (text.lineSpacing * game.uiScale)
+  textHeight = ~~textHeight
+  textWidth = ~~textWidth
   return {textWidth, textHeight, lineWidth}
 }
 
@@ -98,7 +100,7 @@ export default class Text extends Component {
     var paddingCorrection = (this.padding.top + 5) * game.uiScale
     this.renderer.translate(0, paddingCorrection)
     this.lines.map(line => {
-      if (game.debug) {
+      if (me.debug.renderHitBox) {
         var measure = computedTextSize({
           lines: [line], padding: this.padding, lineSpacing: this.lineSpacing,
           renderer: this.renderer, font: this.font

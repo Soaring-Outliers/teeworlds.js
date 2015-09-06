@@ -19,6 +19,13 @@ module.exports = {
         options: {
             interrupt: true
         }
+    },
+    lib: {
+      files: ['lib/**'],
+      tasks: ['concat', 'notify:lib'],
+      options: {
+          interrupt: true
+      }
     }/*,
     libs: {
         files: ['node_modules/**'],
