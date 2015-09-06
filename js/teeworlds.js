@@ -4364,7 +4364,7 @@ exports['default'] = ConnectionControler;
 ConnectionControler.CONNECTED = 0;
 module.exports = exports['default'];
 
-},{"../ui/UIUtil.js":100,"./PeerConnection.js":86,"babel-runtime/core-js/promise":5,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/interop-require-default":10,"hashmap":72}],86:[function(require,module,exports){
+},{"../ui/UIUtil.js":104,"./PeerConnection.js":86,"babel-runtime/core-js/promise":5,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/interop-require-default":10,"hashmap":72}],86:[function(require,module,exports){
 'use strict';
 
 var _createClass = require('babel-runtime/helpers/create-class')['default'];
@@ -4537,7 +4537,7 @@ exports['default'] = Bullet;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],88:[function(require,module,exports){
+},{"../game.js":93,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],88:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -4559,13 +4559,9 @@ var _melonJS = (typeof window !== "undefined" ? window['me'] : typeof global !==
 
 var _melonJS2 = _interopRequireDefault(_melonJS);
 
-var _gameJs = require('../game.js');
+var _gameJs = require('../../game.js');
 
 var _gameJs2 = _interopRequireDefault(_gameJs);
-
-var _BulletJs = require('./Bullet.js');
-
-var _BulletJs2 = _interopRequireDefault(_BulletJs);
 
 var Body = (function (_me$Renderable) {
   function Body() {
@@ -4597,60 +4593,36 @@ var Body = (function (_me$Renderable) {
   return Body;
 })(_melonJS2['default'].Renderable);
 
-var Hands = (function () {
-  function Hands(player) {
-    _classCallCheck(this, Hands);
+exports['default'] = Body;
+module.exports = exports['default'];
 
-    this.player = player;
-    this.hand = _gameJs2['default'].texture.createSpriteFromName('tee_hand');
-    this.gun = _gameJs2['default'].texture.createSpriteFromName('gun');
-    this.gun.anchorPoint.set(0.0, 0.5);
-    this.gun.pos.set(this.player.width / 2, 15);
-  }
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../../game.js":93,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],89:[function(require,module,exports){
+'use strict';
 
-  _createClass(Hands, [{
-    key: 'update',
-    value: function update(dt) {
-      var angle = this.player.angleToCursor();
-      if (angle < 1.5 && angle > -1.5) {
-        this.gun.flipY(false);
-        this.gun.angle = angle
-        //this.hand.angle = angle
-        ;
-      } else {
-        this.gun.flipY(true);
-        this.gun.angle = -angle
-        //this.hand.angle = -angle
-        ;
-      }
-    }
-  }, {
-    key: 'shoot',
-    value: function shoot() {
-      var angle = this.player.angleToCursor();
-      var bullet = _melonJS2['default'].pool.pull('bullet', this.player.center.x, this.player.center.y, angle);
-      _melonJS2['default'].game.world.addChild(bullet);
-    }
-  }, {
-    key: 'draw',
-    value: function draw(renderer) {
-      this.gun.draw(renderer);
-    }
-  }]);
+var _createClass = require('babel-runtime/helpers/create-class')['default'];
 
-  return Hands;
-})();
+var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
+
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _gameJs = require('../../game.js');
+
+var _gameJs2 = _interopRequireDefault(_gameJs);
 
 var Eyes = (function () {
   function Eyes(player) {
     _classCallCheck(this, Eyes);
 
     this.leftEye = _gameJs2['default'].texture.createSpriteFromName('tee_eye');
-    this.leftEye.scale(0.85, 0.85);
     this.rightEye = _gameJs2['default'].texture.createSpriteFromName('tee_eye');
-    this.rightEye.scale(0.85, 0.85);
     this.player = player;
 
+    this.angle = null;
     this.h = Math.cos(Math.atan2(-1, -1));
     this.v = Math.sin(Math.atan2(-1, -1));
   }
@@ -4659,9 +4631,14 @@ var Eyes = (function () {
     key: 'update',
     value: function update(dt) {
       var angle = this.player.angleToCursor();
-      this.leftEye.pos.y = this.rightEye.pos.y = 10 + (Math.sin(angle) - this.v) * 6.5;
-      this.leftEye.pos.x = 7 + (Math.cos(angle) - this.h) * 9.5;
-      this.rightEye.pos.x = this.leftEye.pos.x + this.leftEye.width - 1;
+      if (angle !== this.angle) {
+        this.angle = angle;
+        this.leftEye.pos.y = this.rightEye.pos.y = 10 + (Math.sin(angle) - this.v) * 6.5;
+        this.leftEye.pos.x = this.rightEye.pos.x = 7 + (Math.cos(angle) - this.h) * 9.5;
+        this.rightEye.pos.x += this.leftEye.width;
+        return true;
+      }
+      return false;
     }
   }, {
     key: 'draw',
@@ -4673,6 +4650,31 @@ var Eyes = (function () {
 
   return Eyes;
 })();
+
+exports['default'] = Eyes;
+module.exports = exports['default'];
+
+},{"../../game.js":93,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/interop-require-default":10}],90:[function(require,module,exports){
+(function (global){
+'use strict';
+
+var _createClass = require('babel-runtime/helpers/create-class')['default'];
+
+var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
+
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _melonJS = (typeof window !== "undefined" ? window['me'] : typeof global !== "undefined" ? global['me'] : null);
+
+var _melonJS2 = _interopRequireDefault(_melonJS);
+
+var _gameJs = require('../../game.js');
+
+var _gameJs2 = _interopRequireDefault(_gameJs);
 
 var Feet = (function () {
   function Feet(player) {
@@ -4693,7 +4695,7 @@ var Feet = (function () {
       right: { pos: new _melonJS2['default'].Vector2d(x + 17, y), angle: 0 },
       left: { pos: new _melonJS2['default'].Vector2d(x, y), angle: 0 }
     };
-    this.midAirStand = {
+    this.floatingStand = {
       right: { pos: new _melonJS2['default'].Vector2d(x + 12, y), angle: -0.6 },
       left: { pos: new _melonJS2['default'].Vector2d(x + 4, y), angle: -0.6 }
     };
@@ -4705,27 +4707,27 @@ var Feet = (function () {
   }
 
   _createClass(Feet, [{
-    key: 'changeStand',
-    value: function changeStand(stand) {
+    key: 'updateStand',
+    value: function updateStand(stand) {
       if (this.currentStand !== stand) {
         this.currentStand = stand;
-        this.leftShadow.pos.setV(stand.left.pos);
-        this.rightShadow.pos.setV(stand.right.pos);
-        this.leftSprite.pos.setV(stand.left.pos);
-        this.leftSprite.pos.add(this.shadowToSpritePos);
-        this.rightSprite.pos.setV(stand.right.pos);
-        this.rightSprite.pos.add(this.shadowToSpritePos);
+        this.leftShadow.pos.copy(stand.left.pos);
+        this.rightShadow.pos.copy(stand.right.pos);
+        this.leftSprite.pos.copy(stand.left.pos).add(this.shadowToSpritePos);
+        this.rightSprite.pos.copy(stand.right.pos).add(this.shadowToSpritePos);
         this.leftShadow.angle = this.leftSprite.angle = stand.left.angle;
         this.rightShadow.angle = this.rightSprite.angle = stand.right.angle;
+        return true;
       }
+      return false;
     }
   }, {
     key: 'update',
     value: function update(dt) {
       if (this.player.body.falling || this.player.body.jumping) {
-        this.changeStand(this.midAirStand);
+        return this.updateStand(this.floatingStand);
       } else {
-        this.changeStand(this.defaultStand);
+        return this.updateStand(this.defaultStand);
       }
     }
   }, {
@@ -4753,6 +4755,131 @@ var Feet = (function () {
   return Feet;
 })();
 
+exports['default'] = Feet;
+module.exports = exports['default'];
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../../game.js":93,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/interop-require-default":10}],91:[function(require,module,exports){
+(function (global){
+'use strict';
+
+var _createClass = require('babel-runtime/helpers/create-class')['default'];
+
+var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
+
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _melonJS = (typeof window !== "undefined" ? window['me'] : typeof global !== "undefined" ? global['me'] : null);
+
+var _melonJS2 = _interopRequireDefault(_melonJS);
+
+var _gameJs = require('../../game.js');
+
+var _gameJs2 = _interopRequireDefault(_gameJs);
+
+var Hands = (function () {
+  function Hands(player) {
+    _classCallCheck(this, Hands);
+
+    this.player = player;
+    this.hand = _gameJs2['default'].texture.createSpriteFromName('tee_hand');
+    this.gun = _gameJs2['default'].texture.createSpriteFromName('gun');
+    this.gun.anchorPoint.set(0.0, 0.5);
+    this.gun.pos.set(this.player.width / 2, 15);
+    this.angle = null;
+  }
+
+  _createClass(Hands, [{
+    key: 'update',
+    value: function update(dt) {
+      var angle = this.player.angleToCursor();
+      if (angle !== this.angle) {
+        this.angle = angle;
+        if (angle < 1.5 && angle > -1.5) {
+          this.gun.flipY(false);
+          this.gun.angle = angle
+          //this.hand.angle = angle
+          ;
+        } else {
+          this.gun.flipY(true);
+          this.gun.angle = -angle
+          //this.hand.angle = -angle
+          ;
+        }
+        return true;
+      }
+      return false;
+    }
+  }, {
+    key: 'shoot',
+    value: function shoot() {
+      _melonJS2['default'].game.world.addChild(_melonJS2['default'].pool.pull('bullet', this.player.center.x, this.player.center.y, this.angle));
+    }
+  }, {
+    key: 'draw',
+    value: function draw(renderer) {
+      this.gun.draw(renderer);
+    }
+  }]);
+
+  return Hands;
+})();
+
+exports['default'] = Hands;
+module.exports = exports['default'];
+//this.hand.draw(renderer)
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../../game.js":93,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/interop-require-default":10}],92:[function(require,module,exports){
+(function (global){
+'use strict';
+
+var _get = require('babel-runtime/helpers/get')['default'];
+
+var _inherits = require('babel-runtime/helpers/inherits')['default'];
+
+var _createClass = require('babel-runtime/helpers/create-class')['default'];
+
+var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
+
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _melonJS = (typeof window !== "undefined" ? window['me'] : typeof global !== "undefined" ? global['me'] : null);
+
+var _melonJS2 = _interopRequireDefault(_melonJS);
+
+var _gameJs = require('../../game.js');
+
+var _gameJs2 = _interopRequireDefault(_gameJs);
+
+var _BulletJs = require('../Bullet.js');
+
+var _BulletJs2 = _interopRequireDefault(_BulletJs);
+
+var _BodyJs = require('./Body.js');
+
+var _BodyJs2 = _interopRequireDefault(_BodyJs);
+
+var _EyesJs = require('./Eyes.js');
+
+var _EyesJs2 = _interopRequireDefault(_EyesJs);
+
+var _HandsJs = require('./Hands.js');
+
+var _HandsJs2 = _interopRequireDefault(_HandsJs);
+
+var _FeetJs = require('./Feet.js');
+
+var _FeetJs2 = _interopRequireDefault(_FeetJs);
+
 var Player = (function (_me$Entity) {
   function Player(x, y, settings) {
     var _this = this;
@@ -4766,7 +4893,6 @@ var Player = (function (_me$Entity) {
 
     // Horizontal & vertical speed and gravity
     this.body.setVelocity(9, 12.2);
-    this.body.midAirVelX = 2;
     this.body.gravity = 0.4;
 
     // Hitbox definition and collision type
@@ -4775,10 +4901,10 @@ var Player = (function (_me$Entity) {
     this.body.collisionType = _melonJS2['default'].collision.types.PLAYER_OBJECT;
 
     // Body parts
-    this.renderable = new Body();
-    this.hands = new Hands(this);
-    this.eyes = new Eyes(this);
-    this.feet = new Feet(this);
+    this.renderable = new _BodyJs2['default']();
+    this.hands = new _HandsJs2['default'](this);
+    this.eyes = new _EyesJs2['default'](this);
+    this.feet = new _FeetJs2['default'](this);
 
     this.alwaysUpdate = true;
 
@@ -4813,19 +4939,19 @@ var Player = (function (_me$Entity) {
     key: 'update',
     value: function update(dt) {
       //socket.emit("action", )
+      var updated = false;
+      var floating = this.body.falling || this.body.jumping;
 
       if (_melonJS2['default'].input.isKeyPressed('jump')) {
         this.body.jumping = true;
 
         if (this.multipleJump <= 2) {
-          if (this.multipleJump == 2) {
-            this.body.maxVel.y = 11;
-          } else {
-            this.body.maxVel.y = 12.2;
-          }
+          this.body.maxVel.y = this.multipleJump === 2 ? 11 : 12.2;
+
           this.body.vel.y -= this.body.maxVel.y * this.multipleJump++ * _melonJS2['default'].timer.tick;
+          updated = true;
         }
-      } else if (!this.body.falling && !this.body.jumping) {
+      } else if (!floating) {
         this.multipleJump = 1;
       } else if (this.body.falling && this.multipleJump < 2) {
         this.multipleJump = 2;
@@ -4833,41 +4959,34 @@ var Player = (function (_me$Entity) {
 
       var left = _melonJS2['default'].input.isKeyPressed('left');
       var right = _melonJS2['default'].input.isKeyPressed('right');
-      if (left || right) {
-        if (!this.wasWalking && (this.body.falling || this.body.jumping)) {
-          this.body.maxVel.x = 5.5;
-        }
+      var walking = left || right;
+      if (walking) {
+        this.body.maxVel.x = !this.wasWalking && floating ? 5 : 9;
 
-        //console.log("accel: "+this.body.accel.x+", vel: "+this.body.vel.x + ", maxVel: "+this.body.maxVel.x)
-        if (left) {
-          this.body.vel.x -= this.body.accel.x * _melonJS2['default'].timer.tick;
-        } else {
-          this.body.vel.x += this.body.accel.x * _melonJS2['default'].timer.tick;
-        }
-        this.wasWalking = true;
-      } else {
-        this.body.vel.x += -this.body.vel.x * 0.9;
-        this.body.maxVel.x = 9;
-        this.wasWalking = false;
+        var accel = this.body.accel.x * _melonJS2['default'].timer.tick;
+        this.body.vel.x = this.body.vel.x + (left ? -accel : accel);
+        updated = true;
+      } else if (this.body.vel.x !== 0) {
+        this.body.vel.x = Math.max(0, this.body.vel.x - this.body.vel.x * 0.9);
+        updated = true;
       }
+      this.wasWalking = walking;
 
       // check & update player movement
-      this.body.update(dt);
+      updated = this.body.update(dt) || updated;
       _melonJS2['default'].collision.check(this);
       this.center.setV(this.getCenter());
-      this.hands.update(dt);
-      this.eyes.update(dt);
-      this.feet.update(dt);
+
+      // Update body parts
+      updated = this.renderable.update(dt) || updated;
+      updated = this.hands.update(dt) || updated;
+      updated = this.eyes.update(dt) || updated;
+      updated = this.feet.update(dt) || updated;
 
       if (_melonJS2['default'].input.isKeyPressed('shoot')) {
         this.hands.shoot();
       }
-
-      if (this.body.vel.x != 0 || this.body.vel.y != 0) {
-        _get(Object.getPrototypeOf(Player.prototype), 'update', this).call(this, dt);
-        return true;
-      }
-      return false;
+      return updated;
     }
   }, {
     key: 'onCollision',
@@ -4882,7 +5001,6 @@ var Player = (function (_me$Entity) {
       var x = ~ ~(0.5 + this.pos.x + this.body.pos.x + this.anchorPoint.x * (this.body.width - this.renderable.width));
       var y = ~ ~(0.5 + this.pos.y + this.body.pos.y - 8 + this.anchorPoint.y * (this.body.height - this.renderable.height));
 
-      renderer.save();
       renderer.translate(x, y);
 
       // Hands
@@ -4899,7 +5017,7 @@ var Player = (function (_me$Entity) {
       this.eyes.draw(renderer);
       this.feet.drawRight(renderer);
 
-      renderer.restore();
+      renderer.translate(-x, -y);
     }
   }]);
 
@@ -4908,10 +5026,9 @@ var Player = (function (_me$Entity) {
 
 exports['default'] = Player;
 module.exports = exports['default'];
-//this.hand.draw(renderer)
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"./Bullet.js":87,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],89:[function(require,module,exports){
+},{"../../game.js":93,"../Bullet.js":87,"./Body.js":88,"./Eyes.js":89,"./Feet.js":90,"./Hands.js":91,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],93:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -4929,9 +5046,9 @@ var _connectionConnectionControlerJs = require('./connection/ConnectionControler
 
 var _connectionConnectionControlerJs2 = _interopRequireDefault(_connectionConnectionControlerJs);
 
-var _entityPlayerJs = require('./entity/Player.js');
+var _entityPlayerPlayerJs = require('./entity/player/Player.js');
 
-var _entityPlayerJs2 = _interopRequireDefault(_entityPlayerJs);
+var _entityPlayerPlayerJs2 = _interopRequireDefault(_entityPlayerPlayerJs);
 
 var _uiCursorJs = require('./ui/Cursor.js');
 
@@ -4943,9 +5060,9 @@ var _uiScreenJs2 = _interopRequireDefault(_uiScreenJs);
 
 var game = {
 
-  uiScale: 1.1,
-  width: 1152 * 1.2,
-  height: 720 * 1.2,
+  uiScale: 1,
+  width: 1152,
+  height: 720,
 
   resources: require('./resources.js'),
 
@@ -4959,7 +5076,9 @@ var game = {
       renderer: _melonJS2['default'].video.CANVAS,
       antiAlias: true,
       scale: 'auto',
-      scaleMethod: 'fill-max'
+      scaleMethod: 'fill-max',
+      doubleBuffering: false,
+      transparent: true
     });
     if (!ok) {
       alert('Your browser does not support HTML5 canvas.');
@@ -4972,9 +5091,7 @@ var game = {
     _melonJS2['default'].state.change(_melonJS2['default'].state.LOADING);
 
     // add "#debug" to the URL to enable the debug Panel
-    game.debug = false;
     if (document.location.hash === '#debug') {
-      game.debug = true;
       _melonJS2['default'].debug.renderHitBox = true;
       _melonJS2['default'].plugin.register.defer(game, _melonJS2['default'].debug.Panel, 'debug');
     }
@@ -4996,15 +5113,10 @@ var game = {
     game.titleFont = initFont(22);
 
     // Creates the game cursor which will follow the computer cursor (mouse)
-    var canvas = _melonJS2['default'].video.renderer.getCanvas();
-    canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
-    if (canvas.requestPointerLock) {
-      canvas.requestPointerLock();
-    }
     game.cursor = new _uiCursorJs2['default']();
     _melonJS2['default'].game.world.addChild(game.cursor);
 
-    _melonJS2['default'].pool.register('player1', _entityPlayerJs2['default']);
+    _melonJS2['default'].pool.register('player1', _entityPlayerPlayerJs2['default']);
 
     // Init connection controller
     game.connectionControler = new _connectionConnectionControlerJs2['default']();
@@ -5013,8 +5125,6 @@ var game = {
     game.screen = new _uiScreenJs2['default']();
     _melonJS2['default'].state.set(_melonJS2['default'].state.PLAY, game.screen);
     _melonJS2['default'].state.change(_melonJS2['default'].state.PLAY);
-
-    game.connectionControler.init();
   }
 };
 
@@ -5023,20 +5133,16 @@ window.game = game;
 
 exports['default'] = game;
 module.exports = exports['default'];
+//game.connectionControler.init()
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./connection/ConnectionControler.js":85,"./entity/Player.js":88,"./resources.js":90,"./ui/Cursor.js":94,"./ui/Screen.js":98,"babel-runtime/helpers/interop-require-default":10}],90:[function(require,module,exports){
+},{"./connection/ConnectionControler.js":85,"./entity/player/Player.js":92,"./resources.js":94,"./ui/Cursor.js":98,"./ui/Screen.js":102,"babel-runtime/helpers/interop-require-default":10}],94:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports["default"] = [
-// mini map
-{ name: "mini", type: "tmx", src: "data/map/mini.tmx" }, { name: "grass_main", type: "image", src: "data/mapres/grass_main.png" },
-//    {name: "sun",			type: "image",	src: "data/mapres/sun.png"},
-//    {name: "mountains",		type: "image",	src: "data/mapres/mountains.png"},
-//    {name: "bg_cloud3",		type:"image",	src: "data/mapres/bg_cloud3.png"},
+exports["default"] = [{ name: "dm1", type: "tmx", src: "data/map/dm1.tmx" }, { name: "sky", type: "image", src: "data/mapres/sky.png" }, { name: "sun", type: "image", src: "data/mapres/sun.png" }, { name: "mountains", type: "image", src: "data/mapres/mountains.png" }, { name: "grass_main", type: "image", src: "data/mapres/grass_main.png" }, { name: "grass_doodads", type: "image", src: "data/mapres/grass_doodads.png" },
 
 // Main sprite
 { name: "game", type: "json", src: "data/game/game.json" }, { name: "game", type: "image", src: "data/game/game.png" },
@@ -5045,7 +5151,7 @@ exports["default"] = [
 { name: "ui", type: "json", src: "data/ui/ui.json" }, { name: "ui", type: "image", src: "data/ui/ui.png" }];
 module.exports = exports["default"];
 
-},{}],91:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5183,9 +5289,9 @@ var Box = (function (_Component) {
   }, {
     key: 'draw',
     value: function draw(renderer) {
-      _get(Object.getPrototypeOf(Box.prototype), 'draw', this).apply(this, arguments);
+      _get(Object.getPrototypeOf(Box.prototype), 'draw', this).call(this, renderer);
       if (this._inner) {
-        this._inner.draw.apply(this._inner, arguments);
+        this._inner.draw(renderer);
       }
     }
   }, {
@@ -5273,7 +5379,7 @@ exports['default'] = Box;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"./Component.js":93,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],92:[function(require,module,exports){
+},{"../game.js":93,"./Component.js":97,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],96:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5351,7 +5457,7 @@ exports['default'] = Button;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"./Box.js":91,"./Text.js":99,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],93:[function(require,module,exports){
+},{"../game.js":93,"./Box.js":95,"./Text.js":103,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],97:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5402,8 +5508,8 @@ var Component = (function (_me$GUI_Object) {
     var _ref$centeredV = _ref.centeredV;
     var centeredV = _ref$centeredV === undefined ? true : _ref$centeredV;
 
-    if (x == undefined && centeredH !== false) x = _melonJS2['default'].game.viewport.width / 2 - width / 2;else centeredH = false;
-    if (y == undefined && centeredV !== false) y = _melonJS2['default'].game.viewport.height / 2 - height / 2;else centeredV = false;
+    if (x === undefined && centeredH !== false) x = _melonJS2['default'].game.viewport.width / 2 - width / 2;else centeredH = false;
+    if (y === undefined && centeredV !== false) y = _melonJS2['default'].game.viewport.height / 2 - height / 2;else centeredV = false;
 
     var image = _melonJS2['default'].video.createCanvas(width, height);
     var renderer = new _melonJS2['default'].CanvasRenderer(image, width, height, { transparent: true });
@@ -5436,7 +5542,7 @@ var Component = (function (_me$GUI_Object) {
 
       this.moveTo({ y: parentY + (parentHeight / 2 - this.height / 2) });
 
-      this.centeredV = arguments.length == 0;
+      this.centeredV = arguments.length === 0;
       return this.pos.y;
     }
   }, {
@@ -5451,7 +5557,7 @@ var Component = (function (_me$GUI_Object) {
 
       this.moveTo({ x: parentX + (parentWidth / 2 - this.width / 2) });
 
-      this.centeredH = arguments.length == 0;
+      this.centeredH = arguments.length === 0;
       return this.pos.x;
     }
   }, {
@@ -5503,17 +5609,11 @@ var Component = (function (_me$GUI_Object) {
         this.renderer.prepareSurface();
         this.render();
       }
-      _get(Object.getPrototypeOf(Component.prototype), 'draw', this).apply(this, arguments);
+      _get(Object.getPrototypeOf(Component.prototype), 'draw', this).call(this, renderer);
     }
   }, {
     key: 'render',
     value: function render() {
-      if (_gameJs2['default'].debug) {
-        Component.renderDebugBox({
-          color: 'red', renderer: this.renderer,
-          width: this.width, height: this.height
-        });
-      }
       this.renderer.needUpdate = false;
     }
   }, {
@@ -5585,7 +5685,7 @@ exports['default'] = Component;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],94:[function(require,module,exports){
+},{"../game.js":93,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],98:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5668,7 +5768,7 @@ Cursor.visors = {
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],95:[function(require,module,exports){
+},{"../game.js":93,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],99:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -5907,7 +6007,7 @@ module.exports = exports['default'];
 //this.renderer.restore()
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../util/Arrays.js":101,"./Component.js":93,"./Text.js":99,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],96:[function(require,module,exports){
+},{"../util/Arrays.js":105,"./Component.js":97,"./Text.js":103,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],100:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -6007,7 +6107,7 @@ exports['default'] = Menubar;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"./Box.js":91,"./Button.js":92,"./Panel.js":97,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],97:[function(require,module,exports){
+},{"../game.js":93,"./Box.js":95,"./Button.js":96,"./Panel.js":101,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],101:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -6223,11 +6323,9 @@ var Panel = (function (_Component) {
   }, {
     key: 'draw',
     value: function draw(renderer) {
-      var _arguments = arguments;
-
-      _get(Object.getPrototypeOf(Panel.prototype), 'draw', this).apply(this, arguments);
+      _get(Object.getPrototypeOf(Panel.prototype), 'draw', this).call(this, renderer);
       this.components.map(function (cmp) {
-        return cmp.draw.apply(cmp, _arguments);
+        return cmp.draw(renderer);
       });
     }
   }, {
@@ -6255,7 +6353,7 @@ Panel.GROW = 5;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"./Component.js":93,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],98:[function(require,module,exports){
+},{"../game.js":93,"./Component.js":97,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],102:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -6324,18 +6422,14 @@ var UILayer = (function (_me$Renderable) {
     }
   }, {
     key: 'draw',
-    value: function draw() {
-      var _arguments = arguments;
-
+    value: function draw(renderer) {
       this.components.map(function (c) {
-        return c.draw.apply(c, _arguments);
+        return c.draw(renderer);
       });
     }
   }, {
     key: 'update',
-    value: function update() {
-      var _arguments2 = arguments;
-
+    value: function update(dt) {
       var activeComponent = this.components.length >= 1 ? this.components[this.components.length - 1] : undefined;
 
       if (_melonJS2['default'].input.isKeyPressed('esc')) {
@@ -6351,7 +6445,7 @@ var UILayer = (function (_me$Renderable) {
         }
       }
       this.components.map(function (c) {
-        return c.update.apply(c, _arguments2);
+        return c.update(dt);
       });
       return true;
     }
@@ -6380,7 +6474,21 @@ var Screen = (function (_me$ScreenObject) {
   _createClass(Screen, [{
     key: 'onResetEvent',
     value: function onResetEvent() {
-      _melonJS2['default'].levelDirector.loadLevel('mini');
+      var _this = this;
+
+      _melonJS2['default'].event.subscribe(_melonJS2['default'].event.LEVEL_LOADED, function () {
+        return _this.bgTileLayer = _melonJS2['default'].game.world.getChildByName('background')[0];
+      });
+      _melonJS2['default'].levelDirector.loadLevel('dm1');
+
+      // Subscribe to the viewport change event; fires when the viewport scrolls
+      //me.event.subscribe(me.event.VIEWPORT_ONCHANGE, (pos) => {
+      //  // Copy the viewport position into the tile layer position, then divide by 2...
+      //  if (this.bgTileLayer) {
+      //    var {x, y} = pos.scale(this.bgTileLayer.ratio, this.bgTileLayer.ratio)
+      //    //this.bgTileLayer.updateBoundsPos(x, y)
+      //  }
+      //})
       this.bindKeys();
     }
   }, {
@@ -6434,7 +6542,7 @@ exports['default'] = Screen;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"./Cursor.js":94,"./Menubar.js":96,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],99:[function(require,module,exports){
+},{"../game.js":93,"./Cursor.js":98,"./Menubar.js":100,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],103:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -6482,6 +6590,8 @@ function computedTextSize(text) {
   var lineWidth = fontMeasure.height + heightPadding;
   var textHeight = text.lines.length * lineWidth;
   textHeight += (text.lines.length - 1) * (text.lineSpacing * _gameJs2['default'].uiScale);
+  textHeight = ~ ~textHeight;
+  textWidth = ~ ~textWidth;
   return { textWidth: textWidth, textHeight: textHeight, lineWidth: lineWidth };
 }
 
@@ -6584,7 +6694,7 @@ var Text = (function (_Component) {
       var paddingCorrection = (this.padding.top + 5) * _gameJs2['default'].uiScale;
       this.renderer.translate(0, paddingCorrection);
       this.lines.map(function (line) {
-        if (_gameJs2['default'].debug) {
+        if (_melonJS2['default'].debug.renderHitBox) {
           var measure = computedTextSize({
             lines: [line], padding: _this2.padding, lineSpacing: _this2.lineSpacing,
             renderer: _this2.renderer, font: _this2.font
@@ -6634,7 +6744,7 @@ exports['default'] = Text;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"./Component.js":93,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],100:[function(require,module,exports){
+},{"../game.js":93,"./Component.js":97,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/get":8,"babel-runtime/helpers/inherits":9,"babel-runtime/helpers/interop-require-default":10}],104:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -6811,7 +6921,7 @@ exports['default'] = UIUtil;
 module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../game.js":89,"../util/LazyObj.js":102,"./Box.js":91,"./Button.js":92,"./InputText.js":95,"./Panel.js":97,"./Text.js":99,"babel-runtime/core-js/promise":5,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/interop-require-default":10}],101:[function(require,module,exports){
+},{"../game.js":93,"../util/LazyObj.js":106,"./Box.js":95,"./Button.js":96,"./InputText.js":99,"./Panel.js":101,"./Text.js":103,"babel-runtime/core-js/promise":5,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7,"babel-runtime/helpers/interop-require-default":10}],105:[function(require,module,exports){
 "use strict";
 
 var _createClass = require("babel-runtime/helpers/create-class")["default"];
@@ -6850,7 +6960,7 @@ var Arrays = (function () {
 exports["default"] = Arrays;
 module.exports = exports["default"];
 
-},{"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7}],102:[function(require,module,exports){
+},{"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7}],106:[function(require,module,exports){
 
 /**
  * Creates objects on which you can attach values evaluted only on first access
@@ -6902,4 +7012,4 @@ var LazyObj = (function () {
 exports["default"] = LazyObj;
 module.exports = exports["default"];
 
-},{"babel-runtime/core-js/object/define-property":2,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7}]},{},[89]);
+},{"babel-runtime/core-js/object/define-property":2,"babel-runtime/helpers/class-call-check":6,"babel-runtime/helpers/create-class":7}]},{},[93]);
